@@ -46,11 +46,9 @@ class CurrencyExchangeOrder extends \yii\db\ActiveRecord
     {
         return [
             [['user_id', 'selling_currency_id', 'buying_currency_id'], 'required'],
-            [['user_id', 'selling_currency_id', 'buying_currency_id', 'status', 'renewed_at', 'delivery_radius', 'created_at', 'processed_at', 'selling_cash_on', 'buying_cash_on'], 'integer'],
+            [['user_id', 'selling_currency_id', 'buying_currency_id', 'status', 'delivery_radius', 'created_at', 'processed_at', 'selling_cash_on', 'buying_cash_on'], 'integer'],
             [['selling_rate', 'buying_rate', 'selling_currency_min_amount', 'selling_currency_max_amount'], 'number'],
             [['location_lat', 'location_lon'], 'string', 'max' => 255],
-
-            [['created_at', 'renewed_at'], 'safe'],
 
             [['status'], 'default', 'value' => self::STATUS_INACTIVE],
             [['delivery_radius'], 'default', 'value' => 0],
@@ -74,7 +72,6 @@ class CurrencyExchangeOrder extends \yii\db\ActiveRecord
             'selling_currency_min_amount' => Yii::t('app', 'Min Amount'),
             'selling_currency_max_amount' => Yii::t('app', 'Max Amount'),
             'status' => Yii::t('app', 'Status'),
-            'renewed_at' => 'Renewed At',
             'delivery_radius' => Yii::t('app', 'Delivery Radius'),
             'location_lat' => Yii::t('app', 'Latitude'),
             'location_lon' => Yii::t('app', 'Longitude'),
@@ -96,7 +93,7 @@ class CurrencyExchangeOrder extends \yii\db\ActiveRecord
             [
                 'class' => TimestampBehavior::class,
                 'createdAtAttribute' => 'created_at',
-                'updatedAtAttribute' => 'renewed_at',
+                'updatedAtAttribute' => false,
             ],
         ];
     }
