@@ -4,10 +4,6 @@ namespace app\models;
 
 use Yii;
 use yii\behaviors\TimestampBehavior;
-use app\models\User as GlobalUser;
-use app\modules\bot\validators\RadiusValidator;
-use app\modules\bot\validators\LocationLatValidator;
-use app\modules\bot\validators\LocationLonValidator;
 
 /**
  * This is the model class for table "currency_exchange_order".
@@ -21,32 +17,19 @@ use app\modules\bot\validators\LocationLonValidator;
  * @property float|null $selling_currency_min_amount
  * @property float|null $selling_currency_max_amount
  * @property int $status
+ * @property int $renewed_at
  * @property int $delivery_radius
- * @property string|null $location_lat
- * @property string|null $location_lon
+ * @property string $location_lat
+ * @property string $location_lon
  * @property int $created_at
  * @property int|null $processed_at
  * @property int $selling_cash_on
  * @property int $buying_cash_on
- * @property int $cross_rate_on
- *
- * @property CurrencyExchangeOrderBuyingPaymentMethod[] $currencyExchangeOrderBuyingPaymentMethods
- * @property CurrencyExchangeOrderMatch[] $currencyExchangeOrderMatches
- * @property CurrencyExchangeOrderMatch[] $currencyExchangeOrderMatches0
- * @property CurrencyExchangeOrderSellingPaymentMethod[] $currencyExchangeOrderSellingPaymentMethods
  */
 class CurrencyExchangeOrder extends \yii\db\ActiveRecord
 {
-    public const STATUS_OFF = 0;
-    public const STATUS_ON = 1;
-
-    public const LIVE_DAYS = 30;
-
-    public const CROSS_RATE_OFF = 0;
-    public const CROSS_RATE_ON = 1;
-
-    public const CASH_OFF = 0;
-    public const CASH_ON = 1;
+    const STATUS_ACTIVE = 1;
+    const STATUS_INACTIVE = 0;
 
     /**
      * {@inheritdoc}
@@ -62,59 +45,17 @@ class CurrencyExchangeOrder extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [
-                [
-                    'user_id',
-                    'selling_currency_id',
-                    'buying_currency_id',
-                ],
-                'required',
-            ],
-            [
-                [
-                    'user_id',
-                    'selling_currency_id',
-                    'buying_currency_id',
-                    'status',
-                    'delivery_radius',
-                    'created_at',
-                    'processed_at',
-                    'selling_cash_on',
-                    'buying_cash_on',
-                    'cross_rate_on',
-                ],
-                'integer',
-            ],
-            [
-                'delivery_radius',
-                RadiusValidator::class,
-            ],
-            [
-                'location_lat',
-                LocationLatValidator::class,
-            ],
-            [
-                'location_lon',
-                LocationLonValidator::class,
-            ],
-            [
-                [
-                    'selling_rate',
-                    'buying_rate',
-                ],
-                'double',
-                'min' => 0,
-                'max' => 9999999999999.99,
-            ],
-            [
-                [
-                    'selling_currency_min_amount',
-                    'selling_currency_max_amount',
-                ],
-                'double',
-                'min' => 0,
-                'max' => 9999999999.99999999,
-            ],
+            [['user_id', 'selling_currency_id', 'buying_currency_id'], 'required'],
+            [['user_id', 'selling_currency_id', 'buying_currency_id', 'status', 'renewed_at', 'delivery_radius', 'created_at', 'processed_at', 'selling_cash_on', 'buying_cash_on'], 'integer'],
+            [['selling_rate', 'buying_rate', 'selling_currency_min_amount', 'selling_currency_max_amount'], 'number'],
+            [['location_lat', 'location_lon'], 'string', 'max' => 255],
+
+            [['created_at', 'renewed_at'], 'safe'],
+
+            [['status'], 'default', 'value' => self::STATUS_INACTIVE],
+            [['delivery_radius'], 'default', 'value' => 0],
+            [['location_lat'], 'default', 'value' => ''],
+            [['location_lon'], 'default', 'value' => ''],
         ];
     }
 
@@ -126,199 +67,87 @@ class CurrencyExchangeOrder extends \yii\db\ActiveRecord
         return [
             'id' => 'ID',
             'user_id' => 'User ID',
-            'selling_currency_id' => 'Selling Currency ID',
-            'buying_currency_id' => 'Buying Currency ID',
-            'selling_rate' => Yii::t('bot', 'Exchange rate'),
-            'buying_rate' => Yii::t('bot', 'Reverse exchange rate'),
-            'selling_currency_min_amount' => Yii::t('bot', 'Min. amount'),
-            'selling_currency_max_amount' => Yii::t('bot', 'Max. amount'),
-            'status' => Yii::t('bot', 'Status'),
-            'delivery_radius' => Yii::t('bot', 'Delivery radius'),
-            'location_lat' => 'Location Lat',
-            'location_lon' => 'Location Lon',
+            'selling_currency_id' => Yii::t('app', 'Sell'),
+            'buying_currency_id' => Yii::t('app', 'Buy'),
+            'selling_rate' => Yii::t('app', 'Rate'),
+            'buying_rate' => Yii::t('app', 'Reverse Rate'),
+            'selling_currency_min_amount' => Yii::t('app', 'Min Amount'),
+            'selling_currency_max_amount' => Yii::t('app', 'Max Amount'),
+            'status' => Yii::t('app', 'Status'),
+            'renewed_at' => 'Renewed At',
+            'delivery_radius' => Yii::t('app', 'Delivery Radius'),
+            'location_lat' => Yii::t('app', 'Latitude'),
+            'location_lon' => Yii::t('app', 'Longitude'),
             'created_at' => 'Created At',
             'processed_at' => 'Processed At',
-            'selling_cash_on' => Yii::t('bot', 'Cash'),
-            'buying_cash_on' => Yii::t('bot', 'Cash'),
-            'cross_rate_on' => 'Cross Rate On',
+            'selling_cash_on' => 'Selling Cash On',
+            'buying_cash_on' => 'Buying Cash On',
+            'selling_payment_method' => 'Selling payment method',
+            'buying_payment_method' => 'Buying payment method',
         ];
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function behaviors()
     {
         return [
-            'timestamp' => [
-                'class' => TimestampBehavior::className(),
-                'updatedAtAttribute' => false,
+            [
+                'class' => TimestampBehavior::class,
+                'createdAtAttribute' => 'created_at',
+                'updatedAtAttribute' => 'renewed_at',
             ],
         ];
     }
 
     /**
-     * Gets query for [[CurrencyExchangeOrderSellingPaymentMethods]].
-     *
-     * @return \yii\db\ActiveQuery
+     * {@inheritDoc}
      */
-    public function getSellingPaymentMethods()
+    public function beforeValidate()
     {
-        return $this->hasMany(PaymentMethod::className(), ['id' => 'payment_method_id'])
-            ->viaTable('{{%currency_exchange_order_selling_payment_method}}', ['order_id' => 'id']);
+        $this->buying_rate = ((float) 1) / $this->selling_rate;
+
+        return parent::beforeValidate();
     }
 
     /**
-     * Gets query for [[CurrencyExchangeOrderBuyingPaymentMethods]].
-     *
-     * @return \yii\db\ActiveQuery
-     */
-    public function getBuyingPaymentMethods()
-    {
-        return $this->hasMany(PaymentMethod::className(), ['id' => 'payment_method_id'])
-            ->viaTable('{{%currency_exchange_order_buying_payment_method}}', ['order_id' => 'id']);
-    }
-
-    /**
-     * @return \yii\db\ActiveQuery
-     * @throws \yii\base\InvalidConfigException
-     */
-    public function getMatches()
-    {
-        return $this->hasMany(self::className(), ['id' => 'match_order_id'])
-            ->viaTable('{{%currency_exchange_order_match}}', ['order_id' => 'id']);
-    }
-
-    /**
-     * @return \yii\db\ActiveQuery
-     * @throws \yii\base\InvalidConfigException
-     */
-    public function getCounterMatches()
-    {
-        return $this->hasMany(self::className(), ['id' => 'order_id'])
-            ->viaTable('{{%currency_exchange_order_match}}', ['match_order_id' => 'id']);
-    }
-
-    public function updateMatches()
-    {
-        $this->unlinkAll('matches', true);
-        $this->unlinkAll('counterMatches', true);
-
-        return true;
-    }
-
-    public function getGlobalUser()
-    {
-        return $this->hasOne(GlobalUser::className(), ['id' => 'user_id']);
-    }
-
-    /**
-     * @return string
-     */
-    public function getTitle()
-    {
-        return $this->sellingCurrency->code . '/' . $this->buyingCurrency->code;
-    }
-
-    /**
-     * @return string
-     */
-    public function getReverseTitle()
-    {
-        return $this->buyingCurrency->code . '/' . $this->sellingCurrency->code;
-    }
-
-    /**
-     * @return \yii\db\ActiveQuery
+     * @return Currency|null
      */
     public function getSellingCurrency()
     {
-        return $this->hasOne(Currency::class, ['id' => 'selling_currency_id']);
+        return Currency::findOne(['id' => $this->selling_currency_id]);
+    }
+
+    /**
+     * @return Currency|null
+     */
+    public function getBuyingCurrency()
+    {
+        return Currency::findOne(['id' => $this->buying_currency_id]);
     }
 
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getBuyingCurrency()
+    public function getCurrencyExchangeOrderPaymentMethod()
     {
-        return $this->hasOne(Currency::class, ['id' => 'buying_currency_id']);
+        return $this->hasMany(CurrencyExchangeOrderPaymentMethod::class, ['order_id' => 'id']);
     }
 
     /**
-     * @return bool
+     * @param string $location
+     * @return $this
      */
-    public function isActive()
+    public function setLocation(string $location): self
     {
-        return $this->status == self::STATUS_ON;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function clearMatches()
-    {
-        if ($this->processed_at !== null) {
-            $this->unlinkAll('matches', true);
-            $this->unlinkAll('counterMatches', true);
-
-            $this->setAttributes([
-                'processed_at' => null,
-            ]);
-
-            $this->save();
-        }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function afterSave($insert, $changedAttributes)
-    {
-        $clearMatches = false;
-
-        if (isset($changedAttributes['status'])) {
-            if ($this->status == self::STATUS_OFF) {
-                $clearMatches = true;
-            }
+        $latLon = explode(',', $location);
+        if (count($latLon) === 2) {
+            $this->location_lat = $latLon[0] ?? '';
+            $this->location_lon = $latLon[1] ?? '';
         }
 
-        if (isset($changedAttributes['cross_rate_on'])) {
-            if ($this->cross_rate_on == self::CROSS_RATE_ON) {
-                $clearMatches = true;
-                Yii::warning('cross_rate_on');
-            }
-            Yii::warning('cross_rate_on2');
-        }
-
-        if (isset($changedAttributes['selling_rate'])) {
-            $this->buying_rate = 1 / $this->selling_rate;
-            $this->cross_rate_on = self::CROSS_RATE_OFF;
-            $this->save();
-
-            $clearMatches = true;
-            Yii::warning('selling_rate');
-        }
-
-        if (isset($changedAttributes['buying_rate'])) {
-            $this->selling_rate = 1 / $this->buying_rate;
-            $this->cross_rate_on = self::CROSS_RATE_OFF;
-            $this->save();
-
-            $clearMatches = true;
-            Yii::warning('buying_rate');
-        }
-
-        if (isset($changedAttributes['selling_currency_min_amount'])
-            || isset($changedAttributes['selling_currency_max_amount'])) {
-            $clearMatches = true;
-            Yii::warning('selling_currency_min_amount selling_currency_max_amount');
-        }
-
-        if ($clearMatches) {
-            $this->clearMatches();
-        }
-
-        parent::afterSave($insert, $changedAttributes);
+        return $this;
     }
 
     /**
@@ -326,47 +155,37 @@ class CurrencyExchangeOrder extends \yii\db\ActiveRecord
      */
     public function notPossibleToChangeStatus()
     {
+        $location = ($this->location_lon && $this->location_lat);
+        $cashMethods = PaymentMethod::find()
+            ->select('id')
+            ->where(['type' => 2])
+            ->asArray()
+            ->all();
+        $cashPayment = $this->getCurrencyExchangeOrderPaymentMethod()
+            ->where(['payment_method_id' => $cashMethods[0]])
+            ->all();
         $notFilledFields = [];
 
-        if (($this->selling_cash_on == self::CASH_ON) || ($this->buying_cash_on == self::CASH_ON)) {
-            if (!($this->location_lon && $this->location_lat)) {
-                $notFilledFields[] = Yii::t('bot', $this->getAttributeLabel('location'));
-            }
+        if (!$location && !empty($cashPayment)) {
+            $notFilledFields[] = Yii::t('app', 'Field have to be filled: ') . Yii::t('app', 'Location');
+        }
+
+        if (count($this->currencyExchangeOrderPaymentMethod) < 2) {
+            $notFilledFields[] = Yii::t('app', 'Field have to be filled: ') . Yii::t('app', 'Payment methods');
         }
 
         return $notFilledFields;
     }
 
-    /**
-     * @return string
-     */
-    public function getSellingCurrencyMinAmount()
+    public function beforeDelete()
     {
-        if ($this->selling_currency_min_amount) {
-            return number_format($this->selling_currency_min_amount, 2);
-        } else {
-            return '∞';
+        if (!parent::beforeDelete()) {
+            return false;
         }
-    }
-
-    /**
-     * @return string
-     */
-    public function getSellingCurrencyMaxAmount()
-    {
-        if ($this->selling_currency_max_amount) {
-            return number_format($this->selling_currency_max_amount, 2);
-        } else {
-            return '∞';
-        }
-    }
-
-    public function hasAmount()
-    {
-        if ($this->selling_currency_min_amount || $this->selling_currency_max_amount) {
-            return true;
+        foreach ($this->currencyExchangeOrderPaymentMethod as $payment) {
+            $payment->delete();
         }
 
-        return false;
+        return true;
     }
 }
