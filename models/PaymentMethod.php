@@ -2,7 +2,7 @@
 
 namespace app\models;
 
-use Yii;
+use yii\db\ActiveRecord;
 
 /**
  * This is the model class for table "payment_method".
@@ -11,20 +11,22 @@ use Yii;
  * @property string $name
  * @property int $type
  */
-class PaymentMethod extends \yii\db\ActiveRecord
+class PaymentMethod extends ActiveRecord
 {
     const TYPE_EMONEY = 0;
     const TYPE_BANK = 1;
+    const TYPE_CASH = 2;
 
-    public static $types = [
-        0 => 'E-Money',
-        1 => 'Bank',
+    public static array $types = [
+        self::TYPE_EMONEY => 'E-Money',
+        self::TYPE_BANK => 'Bank',
+        self::TYPE_CASH => 'Cash',
     ];
 
     /**
      * {@inheritdoc}
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return 'payment_method';
     }
@@ -32,7 +34,7 @@ class PaymentMethod extends \yii\db\ActiveRecord
     /**
      * {@inheritdoc}
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             [['name', 'type'], 'required'],
@@ -44,7 +46,7 @@ class PaymentMethod extends \yii\db\ActiveRecord
     /**
      * {@inheritdoc}
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'id' => 'ID',
@@ -59,7 +61,7 @@ class PaymentMethod extends \yii\db\ActiveRecord
                 ->viaTable('payment_method_currency', ['payment_method_id' => 'id']);
     }
 
-    public function getTypeName()
+    public function getTypeName(): string
     {
         return self::$types[$this->type];
     }
@@ -67,7 +69,7 @@ class PaymentMethod extends \yii\db\ActiveRecord
     /**
      * @return string
      */
-    public function getLabel()
+    public function getLabel(): string
     {
         return $this->name;
     }
