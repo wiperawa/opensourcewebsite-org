@@ -31,14 +31,20 @@ $labelOptional = ' (' . Yii::t('app', 'optional') . ')';
                 <div class="card">
                     <div class="card-body">
                         <?php if ($model->isNewRecord): ?>
-                            <?=$this->render('__sell_buy_currency_fields', ['form' => $form, 'model' => $model, 'currencies' => $currencies])?>
+                            <?=$this->render('__sell_buy_currency_fields',
+                                [
+                                    'form' => $form,
+                                    'model' => $model,
+                                    'currencies' => $currencies
+                                ]
+                            )?>
                         <?php else: ?>
                             <div class="row">
                                 <div class="col d-flex">
                                     <p>Sell Currency:</p>&nbsp;<strong><?=$model->getSellingCurrency()->name?></strong>
                                 </div>
                                 <div class="col d-flex">
-                                    <p>Buying currency: </p>&nbps;<strong><?=$model->getBuyingCurrency()->name?></strong>
+                                    <p>Buying currency: </p>&nbsp;<strong><?=$model->getBuyingCurrency()->name?></strong>
                                 </div>
                             </div>
                         <?php endif; ?>
