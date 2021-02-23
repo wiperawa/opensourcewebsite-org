@@ -8,6 +8,7 @@ use dosamigos\leaflet\layers\TileLayer;
 use dosamigos\leaflet\types\LatLng;
 use dosamigos\leaflet\widgets\Map;
 use yii\helpers\Html;
+use yii\web\JsExpression;
 use yii\widgets\ActiveForm;
 use \dosamigos\leaflet\LeafLet;
 use \kartik\select2\Select2;
@@ -146,6 +147,17 @@ $labelOptional = ' (' . Yii::t('app', 'optional') . ')';
 
                         $leaflet = new LeafLet([
                             'center' => $center,
+                            'clientEvents' => [
+                                'load' => new JsExpression("
+                                    function (e) {
+                                        $(document).on('shown.bs.modal','#modal-xl',  function(){
+                                            setTimeout(function() {
+                                                e.sourceTarget.invalidateSize();
+                                            }, 1);
+                                        });
+                                    }
+                                ")
+                            ]
                         ]);
 
                         $leaflet
@@ -179,6 +191,7 @@ $jsMessages = [
 ];
 
 $this->registerJs(<<<JS
+
 var position = {
     'lat': {$center->lat},
     'lng': {$center->lng}
