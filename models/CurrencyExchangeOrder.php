@@ -46,9 +46,21 @@ class CurrencyExchangeOrder extends \yii\db\ActiveRecord
     {
         return [
             [['user_id', 'selling_currency_id', 'buying_currency_id'], 'required'],
-            [['user_id', 'selling_currency_id', 'buying_currency_id', 'status', 'delivery_radius', 'created_at', 'processed_at', 'selling_cash_on', 'buying_cash_on'], 'integer'],
+            [
+                [
+                    'user_id',
+                    'selling_currency_id',
+                    'buying_currency_id',
+                    'status',
+                    'delivery_radius',
+                    'created_at',
+                    'processed_at',
+                    'selling_cash_on',
+                    'buying_cash_on'
+                ], 'integer'
+            ],
             [['selling_rate', 'buying_rate', 'selling_currency_min_amount', 'selling_currency_max_amount'], 'number'],
-            [['location_lat', 'location_lon'], 'string', 'max' => 255],
+            [['location_lat', 'location_lon', 'location'], 'string', 'max' => 255],
 
             [['status'], 'default', 'value' => self::STATUS_INACTIVE],
             [['delivery_radius'], 'default', 'value' => 0],
@@ -103,7 +115,7 @@ class CurrencyExchangeOrder extends \yii\db\ActiveRecord
      */
     public function beforeValidate()
     {
-        $this->buying_rate = ((float) 1) / $this->selling_rate;
+        $this->buying_rate = ((float)1) / $this->selling_rate;
 
         return parent::beforeValidate();
     }
@@ -145,6 +157,11 @@ class CurrencyExchangeOrder extends \yii\db\ActiveRecord
         }
 
         return $this;
+    }
+
+    public function getLocation(): string
+    {
+        return implode(',',[$this->location_lat, $this->location_lon]);
     }
 
     /**

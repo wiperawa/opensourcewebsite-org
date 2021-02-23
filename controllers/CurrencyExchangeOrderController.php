@@ -118,36 +118,22 @@ class CurrencyExchangeOrderController extends Controller
      * @return mixed
      * @throws NotFoundHttpException if the model cannot be found
      */
-    public function actionUpdate($id)
+    public function actionUpdate(int $id)
     {
         $order = $this->findModel($id);
 
         if ($post = Yii::$app->request->post()) {
             if (!empty($post['sell_payment'])) {
-                if (!$sellPayment = $order->getCurrencyExchangeOrderPaymentMethod()->where(['type' => 1])->one()) {
-                    $sellPayment = new CurrencyExchangeOrderPaymentMethod();
-                    $sellPayment->order_id = $order->id;
-                    $sellPayment->payment_method_id = $post['sell_payment'];
-                    $sellPayment->type = 1;
-                } else {
-                    $sellPayment->payment_method_id = $post['sell_payment'];
-                }
-                $sellPayment->save();
+                $this->createOrUpdatePaymentMethod($order, (int)$post['sell_payment'],CurrencyExchangeOrderPaymentMethod::PAYMENT_METHOD_TYPE_SELL);
             }
 
             if (!empty($post['buy_payment'])) {
-                if (!$buyPayment = $order->getCurrencyExchangeOrderPaymentMethod()->where(['type' => 2])->one()) {
-                    $buyPayment = new CurrencyExchangeOrderPaymentMethod();
-                    $buyPayment->order_id = $order->id;
-                    $buyPayment->payment_method_id = $post['buy_payment'];
-                    $buyPayment->type = 2;
-                } else {
-                    $buyPayment->payment_method_id = $post['buy_payment'];
-                }
-                $buyPayment->save();
+                $this->createOrUpdatePaymentMethod($order, (int)$post['buy_payment'], CurrencyExchangeOrderPaymentMethod::PAYMENT_METHOD_TYPE_BUY);
             }
 
-            $order->load($post);
+
+            $isLoaded = $order->load($post);
+
             $order->save();
 
             return $this->redirect(['view', 'id' => $order->id]);
@@ -170,6 +156,25 @@ class CurrencyExchangeOrderController extends Controller
             'buyPaymentId' => isset($buyPayments) ? $buyPayments->payment_method_id : '',
             'paymentsTypes' => $paymentsTypes,
         ]);
+    }
+
+    private function createOrUpdatePaymentMethod(CurrencyExchangeOrder $order, int $paymentMethodId, int $type): CurrencyExchangeOrderPaymentMethod
+    {
+        if (!$orderPayment = $order
+            ->getCurrencyExchangeOrderPaymentMethod()
+            ->where(['type' => $type])
+            ->one())
+        {
+            $orderPayment = new CurrencyExchangeOrderPaymentMethod([
+                'order_id' => $order->id,
+                'payment_method_id' => $paymentMethodId,
+                'type' => $type
+            ]);
+        } else {
+            $orderPayment->payment_method_id = $paymentMethodId;
+        }
+        $orderPayment->save();
+        return $orderPayment;
     }
 
     /**

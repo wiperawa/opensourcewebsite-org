@@ -14,6 +14,9 @@ use Yii;
  */
 class CurrencyExchangeOrderPaymentMethod extends \yii\db\ActiveRecord
 {
+
+    const PAYMENT_METHOD_TYPE_SELL = 1;
+    const PAYMENT_METHOD_TYPE_BUY = 2;
     /**
      * {@inheritdoc}
      */
@@ -30,6 +33,7 @@ class CurrencyExchangeOrderPaymentMethod extends \yii\db\ActiveRecord
         return [
             [['order_id', 'payment_method_id', 'type'], 'required'],
             [['order_id', 'payment_method_id', 'type'], 'integer'],
+            ['type', 'in', [self::PAYMENT_METHOD_TYPE_BUY, self::PAYMENT_METHOD_TYPE_SELL]]
         ];
     }
 
