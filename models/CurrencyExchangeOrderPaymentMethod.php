@@ -2,7 +2,8 @@
 
 namespace app\models;
 
-use Yii;
+use yii\db\ActiveQuery;
+use yii\db\ActiveRecord;
 
 /**
  * This is the model class for table "currency_exchange_order_payment_method".
@@ -12,7 +13,7 @@ use Yii;
  * @property int $payment_method_id
  * @property int $type
  */
-class CurrencyExchangeOrderPaymentMethod extends \yii\db\ActiveRecord
+class CurrencyExchangeOrderPaymentMethod extends ActiveRecord
 {
 
     const PAYMENT_METHOD_TYPE_SELL = 1;
@@ -20,7 +21,7 @@ class CurrencyExchangeOrderPaymentMethod extends \yii\db\ActiveRecord
     /**
      * {@inheritdoc}
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return 'currency_exchange_order_payment_method';
     }
@@ -28,7 +29,7 @@ class CurrencyExchangeOrderPaymentMethod extends \yii\db\ActiveRecord
     /**
      * {@inheritdoc}
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             [['order_id', 'payment_method_id', 'type'], 'required'],
@@ -40,7 +41,7 @@ class CurrencyExchangeOrderPaymentMethod extends \yii\db\ActiveRecord
     /**
      * {@inheritdoc}
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'id' => 'ID',
@@ -50,10 +51,8 @@ class CurrencyExchangeOrderPaymentMethod extends \yii\db\ActiveRecord
         ];
     }
 
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getCurrencyExchangeOrder()
+
+    public function getCurrencyExchangeOrder(): ActiveQuery
     {
         return $this->hasOne(CurrencyExchangeOrder::class, ['id' => 'order_id']);
     }
