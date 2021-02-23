@@ -191,15 +191,4 @@ class CurrencyExchangeOrder extends \yii\db\ActiveRecord
         return $notFilledFields;
     }
 
-    public function beforeDelete()
-    {
-        if (!parent::beforeDelete()) {
-            return false;
-        }
-        foreach ($this->currencyExchangeOrderPaymentMethod as $payment) {
-            $payment->delete();
-        }
-
-        return true;
-    }
 }
