@@ -4,6 +4,8 @@ namespace app\models;
 
 use Yii;
 use yii\behaviors\TimestampBehavior;
+use yii\db\ActiveQuery;
+use yii\db\ActiveRecord;
 
 /**
  * This is the model class for table "currency_exchange_order".
@@ -26,7 +28,7 @@ use yii\behaviors\TimestampBehavior;
  * @property int $selling_cash_on
  * @property int $buying_cash_on
  */
-class CurrencyExchangeOrder extends \yii\db\ActiveRecord
+class CurrencyExchangeOrder extends ActiveRecord
 {
     const STATUS_ACTIVE = 1;
     const STATUS_INACTIVE = 0;
@@ -34,7 +36,7 @@ class CurrencyExchangeOrder extends \yii\db\ActiveRecord
     /**
      * {@inheritdoc}
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return 'currency_exchange_order';
     }
@@ -42,7 +44,7 @@ class CurrencyExchangeOrder extends \yii\db\ActiveRecord
     /**
      * {@inheritdoc}
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             [['user_id', 'selling_currency_id', 'buying_currency_id'], 'required'],
@@ -72,7 +74,7 @@ class CurrencyExchangeOrder extends \yii\db\ActiveRecord
     /**
      * {@inheritdoc}
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'id' => 'ID',
@@ -99,7 +101,7 @@ class CurrencyExchangeOrder extends \yii\db\ActiveRecord
     /**
      * {@inheritDoc}
      */
-    public function behaviors()
+    public function behaviors(): array
     {
         return [
             [
@@ -113,7 +115,7 @@ class CurrencyExchangeOrder extends \yii\db\ActiveRecord
     /**
      * {@inheritDoc}
      */
-    public function beforeValidate()
+    public function beforeValidate(): bool
     {
         $this->buying_rate = ((float)1) / $this->selling_rate;
 
@@ -123,7 +125,7 @@ class CurrencyExchangeOrder extends \yii\db\ActiveRecord
     /**
      * @return Currency|null
      */
-    public function getSellingCurrency()
+    public function getSellingCurrency(): ?Currency
     {
         return Currency::findOne(['id' => $this->selling_currency_id]);
     }
@@ -131,7 +133,7 @@ class CurrencyExchangeOrder extends \yii\db\ActiveRecord
     /**
      * @return Currency|null
      */
-    public function getBuyingCurrency()
+    public function getBuyingCurrency(): ?Currency
     {
         return Currency::findOne(['id' => $this->buying_currency_id]);
     }
@@ -139,7 +141,7 @@ class CurrencyExchangeOrder extends \yii\db\ActiveRecord
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getCurrencyExchangeOrderPaymentMethod()
+    public function getCurrencyExchangeOrderPaymentMethods(): ActiveQuery
     {
         return $this->hasMany(CurrencyExchangeOrderPaymentMethod::class, ['order_id' => 'id']);
     }
@@ -167,15 +169,15 @@ class CurrencyExchangeOrder extends \yii\db\ActiveRecord
     /**
      * @return array
      */
-    public function notPossibleToChangeStatus()
+    public function notPossibleToChangeStatus(): array
     {
         $location = ($this->location_lon && $this->location_lat);
         $cashMethods = PaymentMethod::find()
             ->select('id')
-            ->where(['type' => 2])
+            ->where(['type' => PaymentMethod::TYPE_CASH])
             ->asArray()
             ->all();
-        $cashPayment = $this->getCurrencyExchangeOrderPaymentMethod()
+        $cashPayment = $this->getCurrencyExchangeOrderPaymentMethods()
             ->where(['payment_method_id' => $cashMethods[0]])
             ->all();
         $notFilledFields = [];
@@ -184,7 +186,7 @@ class CurrencyExchangeOrder extends \yii\db\ActiveRecord
             $notFilledFields[] = Yii::t('app', 'Field have to be filled: ') . Yii::t('app', 'Location');
         }
 
-        if (count($this->currencyExchangeOrderPaymentMethod) < 2) {
+        if (count($this->currencyExchangeOrderPaymentMethods) < 2) {
             $notFilledFields[] = Yii::t('app', 'Field have to be filled: ') . Yii::t('app', 'Payment methods');
         }
 

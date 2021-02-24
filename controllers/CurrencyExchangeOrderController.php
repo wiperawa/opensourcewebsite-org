@@ -3,6 +3,7 @@
 namespace app\controllers;
 
 use app\models\Currency;
+use app\repositories\PaymentMethodRepository;
 use app\services\CurrencyExchangeOrderService;
 use Yii;
 use app\models\CurrencyExchangeOrder;
@@ -22,10 +23,12 @@ class CurrencyExchangeOrderController extends Controller
 {
 
     private CurrencyExchangeOrderService $orderService;
+    private PaymentMethodRepository $paymentMethodRepository;
 
-    public function __construct($id, $module, CurrencyExchangeOrderService $orderService, $config = [])
+    public function __construct($id, $module, CurrencyExchangeOrderService $orderService, PaymentMethodRepository $paymentMethodRepository, $config = [])
     {
         $this->orderService = $orderService;
+        $this->paymentMethodRepository = $paymentMethodRepository;
 
         parent::__construct($id, $module, $config);
     }
@@ -83,24 +86,10 @@ class CurrencyExchangeOrderController extends Controller
     {
         $order = $this->findModel($id);
 
-        /** @var CurrencyExchangeOrderPaymentMethod $sellPayments */
-        if ($sellPayments = $order->getCurrencyExchangeOrderPaymentMethod()
-            ->where(['type' => 1])
-            ->one()) {
-            $sellPayment = PaymentMethod::findOne($sellPayments->payment_method_id);
-            $sellPaymentName = $sellPayment->name;
-        }
-        /** @var CurrencyExchangeOrderPaymentMethod $buyPayments */
-        if ($buyPayments = $order->getCurrencyExchangeOrderPaymentMethod()
-            ->where(['type' => 2])
-            ->one()) {
-            $buyPayment = PaymentMethod::findOne($buyPayments->payment_method_id);
-            $buyPaymentName = $buyPayment->name;
-        }
+
+
         return $this->render('view', [
             'model' => $order,
-            'sellPayment' => isset($sellPaymentName) ? $sellPaymentName : Yii::t('app', 'Not selected'),
-            'buyPayment' => isset($buyPaymentName) ? $buyPaymentName : Yii::t('app', 'Not selected'),
         ]);
     }
 
@@ -115,19 +104,14 @@ class CurrencyExchangeOrderController extends Controller
         $model->user_id = Yii::$app->user->identity->id;
 
         if ($model->load(($post = Yii::$app->request->post())) && $model->save()) {
-            $this->orderService->createOrUpdateSellBuyMethods($model, (int)$post['sell_payment'], (int)$post['buy_payment']);
 
             return $this->redirect(['view', 'id' => $model->id]);
         }
 
-        $paymentsTypes = ArrayHelper::map(PaymentMethod::find()
-            ->asArray()
-            ->all(), 'id', 'name');
-
         return $this->render('create', [
             'model' => $model,
             'currencies' => Currency::find()->all(),
-            'paymentsTypes' => $paymentsTypes
+            'paymentsTypes' => $this->paymentMethodRepository->getPaymentMethods()
         ]);
     }
 
@@ -140,39 +124,23 @@ class CurrencyExchangeOrderController extends Controller
      */
     public function actionUpdate(int $id)
     {
-        $order = $this->findModel($id);
+        $model = $this->findModel($id);
 
-        if ($post = Yii::$app->request->post()) {
-            $this->orderService->createOrUpdateSellBuyMethods($order, (int)$post['sell_payment'], (int)$post['buy_payment']);
+        if ($model->load($post = Yii::$app->request->post()) && $model->save()) {
 
-            $order->load($post);
-            $order->save();
 
-            return $this->redirect(['view', 'id' => $order->id]);
+            return $this->redirect(['view', 'id' => $model->id]);
         }
 
-        $paymentsTypes = ArrayHelper::map(PaymentMethod::find()
-            ->asArray()
-            ->all(), 'id', 'name');
-
-        /** @var CurrencyExchangeOrderPaymentMethod $sellPayments */
-        $sellPayments = $order->getCurrencyExchangeOrderPaymentMethod()
-            ->where(['type' => CurrencyExchangeOrderPaymentMethod::PAYMENT_METHOD_TYPE_SELL])
-            ->one();
-
-        /** @var CurrencyExchangeOrderPaymentMethod $buyPayments */
-        $buyPayments = $order->getCurrencyExchangeOrderPaymentMethod()
-            ->where(['type' => CurrencyExchangeOrderPaymentMethod::PAYMENT_METHOD_TYPE_BUY])
-            ->one();
-
         return $this->render('update', [
-            'model' => $order,
-            'sellPaymentId' => isset($sellPayments) ? $sellPayments->payment_method_id : '',
-            'buyPaymentId' => isset($buyPayments) ? $buyPayments->payment_method_id : '',
-            'paymentsTypes' => $paymentsTypes,
+            'model' => $model,
             'currencies' => Currency::find()->all(),
+            'paymentsTypes' => $this->paymentMethodRepository->getPaymentMethods(),
+            'sellPaymentMethods' => $model->getCurrencyExchangeOrderPaymentMethods()->sell(),
+            'buyPaymentMethods' => $model->getCurrencyExchangeOrderPaymentMethods()->buy(),
         ]);
     }
+
 
     /**
      * Change status.

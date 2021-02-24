@@ -2,6 +2,7 @@
 
 namespace app\models;
 
+use app\models\CurrencyExchangeOrderPaymentMethodQuery;
 use yii\db\ActiveQuery;
 use yii\db\ActiveRecord;
 
@@ -24,6 +25,11 @@ class CurrencyExchangeOrderPaymentMethod extends ActiveRecord
     public static function tableName(): string
     {
         return 'currency_exchange_order_payment_method';
+    }
+
+    public static function find()
+    {
+        return new CurrencyExchangeOrderPaymentMethodQuery(get_called_class());
     }
 
     /**
@@ -51,6 +57,10 @@ class CurrencyExchangeOrderPaymentMethod extends ActiveRecord
         ];
     }
 
+    public function getPaymentMethod(): ActiveQuery
+    {
+        return $this->hasOne(PaymentMethod::class, ['id' => 'payment_method_id']);
+    }
 
     public function getCurrencyExchangeOrder(): ActiveQuery
     {

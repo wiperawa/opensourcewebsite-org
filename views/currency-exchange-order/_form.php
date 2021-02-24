@@ -9,18 +9,18 @@ use dosamigos\leaflet\layers\Marker;
 use dosamigos\leaflet\layers\TileLayer;
 use dosamigos\leaflet\types\LatLng;
 use dosamigos\leaflet\widgets\Map;
+use yii\helpers\ArrayHelper;
 use yii\web\JsExpression;
 use yii\widgets\ActiveForm;
-use \dosamigos\leaflet\LeafLet;
-use \kartik\select2\Select2;
+use dosamigos\leaflet\LeafLet;
+use kartik\select2\Select2;
 
 /* @var $this yii\web\View */
 /* @var $model CurrencyExchangeOrder */
 /* @var $form yii\widgets\ActiveForm */
 /* @var $currencies Currency[] */
-/* @var $sellPaymentId int|null */
-/* @var $buyPaymentId int|null */
-/* @var paymentTypes array|null */
+/* @var $paymentsTypes array|null */
+$a = ArrayHelper::getColumn($model->getCurrencyExchangeOrderPaymentMethods()->sell()->all(),'id');
 
 $labelOptional = ' (' . Yii::t('app', 'optional') . ')';
 ?>
@@ -98,12 +98,18 @@ $labelOptional = ' (' . Yii::t('app', 'optional') . ')';
                             <div class="col">
                                 <label class="control-label"><?= Yii::t('app', 'Payment method for Sell'); ?></label>
                                 <?= Select2::widget([
-                                    'name' => 'sell_payment',
-                                    'hideSearch' => true,
-                                    'data' => $paymentsTypes,
-                                    'value' => $sellPaymentId,
-                                    'options' => ['placeholder' => 'Select a payment...'],
-                                    'pluginOptions' => ['allowClear' => true],
+                                    'name' => 'sellPaymentMethodsIds',
+                                    'theme' => Select2::THEME_DEFAULT,
+                                    'data' => ArrayHelper::map($paymentsTypes,'id', 'name'),
+                                    'value' => ArrayHelper::getColumn($model->getCurrencyExchangeOrderPaymentMethods()->sell()->all(),'payment_method_id'),
+                                    'options' => [
+                                        'placeholder' => 'Select a payment...',
+                                        'multiple' => true,
+                                    ],
+                                    'pluginOptions' => [
+                                        'allowClear' => true,
+                                        'closeOnSelect' => false,
+                                    ],
                                 ]); ?>
                             </div>
                         </div>
@@ -111,12 +117,18 @@ $labelOptional = ' (' . Yii::t('app', 'optional') . ')';
                             <div class="col">
                                 <label class="control-label"><?= Yii::t('app', 'Payment method for Buy'); ?></label>
                                 <?= Select2::widget([
-                                    'name' => 'buy_payment',
-                                    'hideSearch' => true,
-                                    'data' => $paymentsTypes,
-                                    'value' => $buyPaymentId,
-                                    'options' => ['placeholder' => 'Select a payment...'],
-                                    'pluginOptions' => ['allowClear' => true],
+                                    'name' => 'buyPaymentMethodsIds',
+                                    'theme' => Select2::THEME_DEFAULT,
+                                    'data' => ArrayHelper::map($paymentsTypes,'id', 'name'),
+                                    'value' => ArrayHelper::getColumn($model->getCurrencyExchangeOrderPaymentMethods()->buy()->all(),'payment_method_id'),
+                                    'options' => [
+                                        'placeholder' => 'Select a payment...',
+                                        'multiple' => true,
+                                    ],
+                                    'pluginOptions' => [
+                                        'allowClear' => true,
+                                        'closeOnSelect' => false,
+                                    ],
                                 ]); ?>
                             </div>
                         </div>

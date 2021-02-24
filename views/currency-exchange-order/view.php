@@ -2,6 +2,7 @@
 
 use \app\models\CurrencyExchangeOrder;
 use app\widgets\buttons\EditButton;
+use yii\helpers\ArrayHelper;
 
 /* @var $this yii\web\View */
 /* @var $model app\models\CurrencyExchangeOrder */
@@ -81,13 +82,29 @@ $this->params['breadcrumbs'][] = '#' . $model->id;
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <th class="align-middle" scope="col"><?= Yii::t('app', 'Payment method for Sell'); ?></th>
-                                        <td class="align-middle"><?= $sellPayment; ?></td>
+                                        <th class="align-middle" scope="col"><?= Yii::t('app', 'Payment methods for Sell'); ?></th>
+                                        <td class="align-middle">
+                                            <?=implode(',', ArrayHelper::getColumn(
+                                                ArrayHelper::getColumn(
+                                                    $model->getCurrencyExchangeOrderPaymentMethods()->sell()->with('paymentMethod')->asArray()->all(),
+                                                    'paymentMethod'
+                                                ),'name'
+                                            ));
+                                            ?>
+                                        </td>
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <th class="align-middle" scope="col"><?= Yii::t('app', 'Payment method for Buy'); ?></th>
-                                        <td class="align-middle"><?= $buyPayment; ?></td>
+                                        <th class="align-middle" scope="col"><?= Yii::t('app', 'Payment methods for Buy'); ?></th>
+                                        <td class="align-middle">
+                                            <?=implode(',', ArrayHelper::getColumn(
+                                                ArrayHelper::getColumn(
+                                                    $model->getCurrencyExchangeOrderPaymentMethods()->buy()->with('paymentMethod')->asArray()->all(),
+                                                    'paymentMethod'
+                                                ),'name'
+                                            ));
+                                            ?>
+                                        </td>
                                         <td></td>
                                     </tr>
                                 </tbody>

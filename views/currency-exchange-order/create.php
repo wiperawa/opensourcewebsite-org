@@ -19,8 +19,6 @@ $this->params['breadcrumbs'][] = $this->title;
         'model' => $model,
         'currencies' => $currencies,
         'paymentsTypes' => $paymentsTypes,
-        'sellPaymentId' => null,
-        'buyPaymentId' => null,
     ]); ?>
 
 </div>
