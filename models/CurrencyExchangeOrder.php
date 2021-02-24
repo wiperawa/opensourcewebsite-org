@@ -10,6 +10,7 @@ use app\modules\bot\validators\RadiusValidator;
 use app\modules\bot\validators\LocationLatValidator;
 use app\modules\bot\validators\LocationLonValidator;
 use yii\helpers\ArrayHelper;
+use yii\web\JsExpression;
 
 /**
  * This is the model class for table "currency_exchange_order".
@@ -50,8 +51,8 @@ class CurrencyExchangeOrder extends \yii\db\ActiveRecord
     public const CASH_OFF = 0;
     public const CASH_ON = 1;
 
-    public $_updateBuyingPaymentMethods = [];
-    public $_updateSellingPaymentMethods = [];
+    public $_updateBuyingPaymentMethods = null;
+    public $_updateSellingPaymentMethods = null;
 
     /**
      * {@inheritdoc}
@@ -101,6 +102,15 @@ class CurrencyExchangeOrder extends \yii\db\ActiveRecord
             [
                 'location_lon',
                 LocationLonValidator::class,
+            ],
+            ['location', 'required', 'when' => function ($model) {
+                $loc = $model->location;
+                if (($model->selling_cash_on || $model->buying_cash_on) && !$model->location) {
+                    $model->addError('location', 'Location is Required');
+                }
+            }, 'whenClient' => new JsExpression("function(attribute, value) {
+                return $('#cashBuyCheckbox').prop('checked') || $('#cashSellCheckbox').prop('checked');
+            }")
             ],
             [
                 'location', 'string',
@@ -183,7 +193,7 @@ class CurrencyExchangeOrder extends \yii\db\ActiveRecord
 
     public function getLocation(): string
     {
-        return implode(',',[$this->location_lat, $this->location_lon]);
+        return ($this->location_lat && $this->location_lon) ? implode(',',[$this->location_lat, $this->location_lon]): '';
     }
 
 
@@ -199,16 +209,24 @@ class CurrencyExchangeOrder extends \yii\db\ActiveRecord
     }
 
     public function setUpdateSellingPaymentMethods(array $ids) {
-        $this->_updateSellingPaymentMethods = $ids;
-        $currentMethodsIds = ArrayHelper::getColumn($this->getSellingPaymentMethods()->asArray()->all(), 'id');
+        if ([''] != $ids) {
+            $this->_updateSellingPaymentMethods = $ids;
+        }
+    }
 
-        $toDelete = array_diff($currentMethodsIds, $ids);
-        $toLink = array_diff($ids, $currentMethodsIds);
+    public function updateSellingPaymentMethods() {
+        $ids = $this->_updateSellingPaymentMethods;
+        if ($ids) {
+            $currentMethodsIds = ArrayHelper::getColumn($this->getSellingPaymentMethods()->asArray()->all(), 'id');
 
-        CurrencyExchangeOrderSellingPaymentMethod::deleteAll(['AND', ['order_id' => $this->id], ['in', 'payment_method_id', $toDelete]]);
+            $toDelete = array_diff($currentMethodsIds, $ids);
+            $toLink = array_diff($ids, $currentMethodsIds);
 
-        foreach ($toLink as $id) {
-            $this->link('sellingPaymentMethods', PaymentMethod::findOne($id));
+            CurrencyExchangeOrderSellingPaymentMethod::deleteAll(['AND', ['order_id' => $this->id], ['in', 'payment_method_id', $toDelete]]);
+
+            foreach ($toLink as $id) {
+                $this->link('sellingPaymentMethods', PaymentMethod::findOne($id));
+            }
         }
     }
 
@@ -224,18 +242,28 @@ class CurrencyExchangeOrder extends \yii\db\ActiveRecord
     }
 
     public function setUpdateBuyingPaymentMethods(array $ids) {
-        $this->_updateBuyingPaymentMethods = $ids;
-        $currentMethodsIds = ArrayHelper::getColumn($this->getBuyingPaymentMethods()->asArray()->all(), 'id');
-
-        $toDelete = array_diff($currentMethodsIds, $ids);
-        $toLink = array_diff($ids, $currentMethodsIds);
-
-        CurrencyExchangeOrderBuyingPaymentMethod::deleteAll(['AND', ['order_id' => $this->id], ['in', 'payment_method_id', $toDelete]]);
-
-        foreach ($toLink as $id) {
-            $this->link('buyingPaymentMethods', PaymentMethod::findOne($id));
+        if ([''] != $ids) {
+            $this->_updateBuyingPaymentMethods = $ids;
         }
     }
+
+    public function updateBuyingPaymentMethods() {
+        $ids = $this->_updateBuyingPaymentMethods;
+        $s = !empty($ids);
+        if ($ids) {
+            $currentMethodsIds = ArrayHelper::getColumn($this->getBuyingPaymentMethods()->asArray()->all(), 'id');
+
+            $toDelete = array_diff($currentMethodsIds, $ids);
+            $toLink = array_diff($ids, $currentMethodsIds);
+
+            CurrencyExchangeOrderBuyingPaymentMethod::deleteAll(['AND', ['order_id' => $this->id], ['in', 'payment_method_id', $toDelete]]);
+
+            foreach ($toLink as $id) {
+                $this->link('buyingPaymentMethods', PaymentMethod::findOne($id));
+            }
+        }
+    }
+
     public function getUpdateBuyingPaymentMethods()
     {
         return $this->_updateBuyingPaymentMethods;
@@ -339,6 +367,9 @@ class CurrencyExchangeOrder extends \yii\db\ActiveRecord
      */
     public function afterSave($insert, $changedAttributes)
     {
+        $this->updateBuyingPaymentMethods();
+        $this->updateSellingPaymentMethods();
+
         $clearMatches = false;
 
         if (isset($changedAttributes['status'])) {

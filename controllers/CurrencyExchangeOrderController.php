@@ -22,17 +22,6 @@ use \app\models\PaymentMethod;
 class CurrencyExchangeOrderController extends Controller
 {
 
-    private CurrencyExchangeOrderService $orderService;
-    private PaymentMethodRepository $paymentMethodRepository;
-
-    public function __construct($id, $module, CurrencyExchangeOrderService $orderService, PaymentMethodRepository $paymentMethodRepository, $config = [])
-    {
-        $this->orderService = $orderService;
-        $this->paymentMethodRepository = $paymentMethodRepository;
-
-        parent::__construct($id, $module, $config);
-    }
-
     /**
      * {@inheritdoc}
      */
@@ -103,6 +92,8 @@ class CurrencyExchangeOrderController extends Controller
         $model = new CurrencyExchangeOrder();
         $model->user_id = Yii::$app->user->identity->id;
 
+        $cashPaymentMethod = PaymentMethod::findOne(['type' => PaymentMethod::TYPE_CASH]);
+
         if ($model->load(($post = Yii::$app->request->post())) && $model->save()) {
 
             return $this->redirect(['view', 'id' => $model->id]);
@@ -111,6 +102,7 @@ class CurrencyExchangeOrderController extends Controller
         return $this->render('create', [
             'model' => $model,
             'currencies' => Currency::find()->all(),
+            'cashPaymentMethod' => $cashPaymentMethod,
         ]);
     }
 

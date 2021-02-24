@@ -2,6 +2,7 @@
 
 use app\models\Currency;
 use app\models\CurrencyExchangeOrder;
+use app\models\PaymentMethod;
 use app\widgets\buttons\CancelButton;
 use app\widgets\buttons\DeleteButton;
 use app\widgets\buttons\SaveButton;
@@ -19,8 +20,10 @@ use kartik\select2\Select2;
 /* @var $model CurrencyExchangeOrder */
 /* @var $form yii\widgets\ActiveForm */
 /* @var $currencies Currency[] */
+/* @var $cashPaymentMethod PaymentMethod */
 
 $labelOptional = ' (' . Yii::t('app', 'optional') . ')';
+var_dump($model->errors);
 ?>
     <div class="currency-exchange-order-form">
         <?php $form = ActiveForm::begin(); ?>
@@ -67,19 +70,16 @@ $labelOptional = ' (' . Yii::t('app', 'optional') . ')';
                                     ->label($model->getAttributeLabel('selling_currency_max_amount') . $labelOptional); ?>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col">
-                                <div class="custom-control custom-switch">
-                                    <input type="checkbox" class="custom-control-input " id="cashSellCheckbox" name="allow_cash_sell">
-                                    <label class="custom-control-label" for="cashSellCheckbox">Cash Sell</label>
-                                </div>
-                                <div class="custom-control custom-switch">
-                                    <input type="checkbox" class="custom-control-input" id="cashBuyCheckbox" name="allow_cash_buy">
-                                    <label class="custom-control-label" for="cashSellCheckbox">Cash Buy</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="location-radius-div">
+
+                        <?php if ($cashPaymentMethod): ?>
+                            <?=$this->render('_cash_method', [
+                                'form' => $form,
+                                'model' => $model,
+                                'cashPaymentMethod' => $cashPaymentMethod
+                            ])?>
+                        <?php endif; ?>
+
+                        <div class="location-radius-div" >
                         <div class="row">
                             <div class="col">
                                 <?= $form->field($model, 'delivery_radius')
