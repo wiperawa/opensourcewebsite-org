@@ -27,11 +27,6 @@ class CurrencyExchangeOrderPaymentMethod extends ActiveRecord
         return 'currency_exchange_order_payment_method';
     }
 
-    public static function find()
-    {
-        return new CurrencyExchangeOrderPaymentMethodQuery(get_called_class());
-    }
-
     /**
      * {@inheritdoc}
      */

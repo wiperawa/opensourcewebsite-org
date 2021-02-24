@@ -62,7 +62,7 @@ class CurrencyExchangeOrderController extends Controller
      * @param int $status
      * @return mixed
      */
-    public function actionIndex(int $status = CurrencyExchangeOrder::STATUS_ACTIVE)
+    public function actionIndex(int $status = CurrencyExchangeOrder::STATUS_ON)
     {
         $dataProvider = new ActiveDataProvider([
             'query' => CurrencyExchangeOrder::find()
@@ -111,7 +111,6 @@ class CurrencyExchangeOrderController extends Controller
         return $this->render('create', [
             'model' => $model,
             'currencies' => Currency::find()->all(),
-            'paymentsTypes' => $this->paymentMethodRepository->getPaymentMethods()
         ]);
     }
 
@@ -135,12 +134,24 @@ class CurrencyExchangeOrderController extends Controller
         return $this->render('update', [
             'model' => $model,
             'currencies' => Currency::find()->all(),
-            'paymentsTypes' => $this->paymentMethodRepository->getPaymentMethods(),
-            'sellPaymentMethods' => $model->getCurrencyExchangeOrderPaymentMethods()->sell(),
-            'buyPaymentMethods' => $model->getCurrencyExchangeOrderPaymentMethods()->buy(),
         ]);
     }
 
+
+    public function actionUpdateSellBuyMethods($id)
+    {
+        $model = $this->findModel($id);
+
+        if ($model->load(Yii::$app->request->post()) && $model->save() ) {
+            return $this->redirect(['view', 'id' => $model->id]);
+        }
+
+        return $this->render('update_sell_buy_methods', [
+            'model' => $model,
+            'paymentsBuyTypes' => PaymentMethod::find()->joinWith('currencies')->where(['currency.id' => $model->buying_currency_id])->all(),
+            'paymentsSellTypes' => PaymentMethod::find()->joinWith('currencies')->where(['currency.id' => $model->selling_currency_id])->all(),
+        ]);
+    }
 
     /**
      * Change status.

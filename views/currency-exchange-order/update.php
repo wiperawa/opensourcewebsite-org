@@ -3,7 +3,6 @@
 /* @var $this yii\web\View */
 /* @var $model app\models\CurrencyExchangeOrder */
 /* @var $currencies Currency[] */
-/* @var $paymentsTypes array|null */
 
 
 use app\models\Currency;
@@ -17,7 +16,6 @@ $this->params['breadcrumbs'][] = Yii::t('app', 'Update');
 <div class="currency-exchange-order-update">
     <?= $this->render('_form', [
         'model' => $model,
-        'paymentsTypes' => $paymentsTypes,
         'currencies' => $currencies,
     ]); ?>
 </div>

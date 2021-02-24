@@ -19,8 +19,6 @@ use kartik\select2\Select2;
 /* @var $model CurrencyExchangeOrder */
 /* @var $form yii\widgets\ActiveForm */
 /* @var $currencies Currency[] */
-/* @var $paymentsTypes array|null */
-$a = ArrayHelper::getColumn($model->getCurrencyExchangeOrderPaymentMethods()->sell()->all(),'id');
 
 $labelOptional = ' (' . Yii::t('app', 'optional') . ')';
 ?>
@@ -41,10 +39,10 @@ $labelOptional = ' (' . Yii::t('app', 'optional') . ')';
                         <?php else: ?>
                             <div class="row">
                                 <div class="col d-flex">
-                                    <p>Sell Currency:</p>&nbsp;<strong><?=$model->getSellingCurrency()->name?></strong>
+                                    <p>Sell Currency:</p>&nbsp;<strong><?=$model->sellingCurrency->name?></strong>
                                 </div>
                                 <div class="col d-flex">
-                                    <p>Buying currency: </p>&nbsp;<strong><?=$model->getBuyingCurrency()->name?></strong>
+                                    <p>Buying currency: </p>&nbsp;<strong><?=$model->buyingCurrency->name?></strong>
                                 </div>
                             </div>
                         <?php endif; ?>
@@ -71,6 +69,19 @@ $labelOptional = ' (' . Yii::t('app', 'optional') . ')';
                         </div>
                         <div class="row">
                             <div class="col">
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input " id="cashSellCheckbox" name="allow_cash_sell">
+                                    <label class="custom-control-label" for="cashSellCheckbox">Cash Sell</label>
+                                </div>
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input" id="cashBuyCheckbox" name="allow_cash_buy">
+                                    <label class="custom-control-label" for="cashSellCheckbox">Cash Buy</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="location-radius-div">
+                        <div class="row">
+                            <div class="col">
                                 <?= $form->field($model, 'delivery_radius')
                                     ->textInput(['maxlength' => true])
                                     ->label($model->getAttributeLabel('delivery_radius') . ', km' . $labelOptional); ?>
@@ -94,43 +105,6 @@ $labelOptional = ' (' . Yii::t('app', 'optional') . ')';
                                 </div>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col">
-                                <label class="control-label"><?= Yii::t('app', 'Payment method for Sell'); ?></label>
-                                <?= Select2::widget([
-                                    'name' => 'sellPaymentMethodsIds',
-                                    'theme' => Select2::THEME_DEFAULT,
-                                    'data' => ArrayHelper::map($paymentsTypes,'id', 'name'),
-                                    'value' => ArrayHelper::getColumn($model->getCurrencyExchangeOrderPaymentMethods()->sell()->all(),'payment_method_id'),
-                                    'options' => [
-                                        'placeholder' => 'Select a payment...',
-                                        'multiple' => true,
-                                    ],
-                                    'pluginOptions' => [
-                                        'allowClear' => true,
-                                        'closeOnSelect' => false,
-                                    ],
-                                ]); ?>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col">
-                                <label class="control-label"><?= Yii::t('app', 'Payment method for Buy'); ?></label>
-                                <?= Select2::widget([
-                                    'name' => 'buyPaymentMethodsIds',
-                                    'theme' => Select2::THEME_DEFAULT,
-                                    'data' => ArrayHelper::map($paymentsTypes,'id', 'name'),
-                                    'value' => ArrayHelper::getColumn($model->getCurrencyExchangeOrderPaymentMethods()->buy()->all(),'payment_method_id'),
-                                    'options' => [
-                                        'placeholder' => 'Select a payment...',
-                                        'multiple' => true,
-                                    ],
-                                    'pluginOptions' => [
-                                        'allowClear' => true,
-                                        'closeOnSelect' => false,
-                                    ],
-                                ]); ?>
-                            </div>
                         </div>
                     </div>
                     <div class="card-footer">

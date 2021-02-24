@@ -5,7 +5,6 @@ use app\models\CurrencyExchangeOrder;
 
 /* @var $this yii\web\View */
 /* @var $model CurrencyExchangeOrder */
-/* @var $paymentsTypes array */
 /* @var $currencies Currency */
 
 $this->title = Yii::t('app', 'Create Currency Exchange Order');
@@ -18,7 +17,6 @@ $this->params['breadcrumbs'][] = $this->title;
     <?= $this->render('_form', [
         'model' => $model,
         'currencies' => $currencies,
-        'paymentsTypes' => $paymentsTypes,
     ]); ?>
 
 </div>

@@ -22,15 +22,15 @@ $this->params['breadcrumbs'][] = $this->title;
                 <div class="card-header d-flex p-0">
                     <ul class="nav nav-pills ml-auto p-2">
                         <li class="nav-item">
-                            <?= Html::a(Yii::t('app', 'Active'), ['/currency-exchange-order', 'status' => CurrencyExchangeOrder::STATUS_ACTIVE], [
+                            <?= Html::a(Yii::t('app', 'Active'), ['/currency-exchange-order', 'status' => CurrencyExchangeOrder::STATUS_ON], [
                                 'class' => 'nav-link show ' .
-                                    (Yii::$app->request->get('status', (string) CurrencyExchangeOrder::STATUS_ACTIVE) === (string) CurrencyExchangeOrder::STATUS_ACTIVE ? 'active' : '')
+                                    (Yii::$app->request->get('status', (string) CurrencyExchangeOrder::STATUS_ON) === (string) CurrencyExchangeOrder::STATUS_ON ? 'active' : '')
                             ]); ?>
                         </li>
                         <li class="nav-item">
-                            <?= Html::a(Yii::t('app', 'Inactive'), ['/currency-exchange-order', 'status' => CurrencyExchangeOrder::STATUS_INACTIVE], [
+                            <?= Html::a(Yii::t('app', 'Inactive'), ['/currency-exchange-order', 'status' => CurrencyExchangeOrder::STATUS_OFF], [
                                 'class' => 'nav-link show ' .
-                                    (Yii::$app->request->get('status') === (string) CurrencyExchangeOrder::STATUS_INACTIVE ? 'active' : '')
+                                    (Yii::$app->request->get('status') === (string) CurrencyExchangeOrder::STATUS_OFF ? 'active' : '')
                             ]); ?>
                         </li>
                         <li class="nav-item align-self-center mr-4">
