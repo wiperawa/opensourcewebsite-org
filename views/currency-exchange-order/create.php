@@ -7,7 +7,6 @@ use app\models\PaymentMethod;
 /* @var $this yii\web\View */
 /* @var $model CurrencyExchangeOrder */
 /* @var $currencies Currency */
-/* @var $cashPaymentMethod PaymentMethod */
 
 $this->title = Yii::t('app', 'Create Currency Exchange Order');
 $this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'Currency Exchange Orders'), 'url' => ['index']];
@@ -19,7 +18,6 @@ $this->params['breadcrumbs'][] = $this->title;
     <?= $this->render('_form', [
         'model' => $model,
         'currencies' => $currencies,
-        'cashPaymentMethod' => $cashPaymentMethod,
     ]); ?>
 
 </div>

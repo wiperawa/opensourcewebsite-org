@@ -21,15 +21,16 @@ $this->params['breadcrumbs'][] = '#' . $model->id;
                             <li class="nav-item align-self-center mr-3">
                                 <div class="input-group-prepend">
                                     <div class="dropdown">
-                                        <a class="btn btn-secondary dropdown-toggle" href="#" role="button"
+                                        <a class="btn <?=$model->isActive()?'btn-primary':'btn-secondary'?> dropdown-toggle" href="#" role="button"
                                            id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true"
                                            aria-expanded="false">
-                                            <?= $model->getAttributeLabel('Status'); ?>
+                                            <?= $model->getAttributeLabel('Status'); ?>:&nbsp;<?=$model->isActive()?'active':'inactive'?>
                                         </a>
                                         <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                                            <a class="dropdown-item status-update <?= $model->status === CurrencyExchangeOrder::STATUS_ON ? 'active' : '' ?>"
-                                               href="#" data-value="<?= CurrencyExchangeOrder::STATUS_ON ?>">Active</a>
-                                            <a class="dropdown-item status-update <?= $model->status === CurrencyExchangeOrder::STATUS_OFF ? 'active' : '' ?>"
+                                            <a class="dropdown-item status-update <?= $model->isActive() ? 'active' : '' ?>"
+                                               href="#"
+                                               data-value="<?= CurrencyExchangeOrder::STATUS_ON ?>">Active</a>
+                                            <a class="dropdown-item status-update <?= !$model->isActive() ? 'active' : '' ?>"
                                                href="#"
                                                data-value="<?= CurrencyExchangeOrder::STATUS_OFF ?>">Inactive</a>
                                         </div>

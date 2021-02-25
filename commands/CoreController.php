@@ -2,6 +2,9 @@
 
 namespace app\commands;
 
+use app\models\Currency;
+use app\models\PaymentMethod;
+use Faker\Provider\Payment;
 use Yii;
 use yii\console\Controller;
 use app\models\Rating;

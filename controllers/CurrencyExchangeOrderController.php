@@ -5,6 +5,7 @@ namespace app\controllers;
 use app\models\Currency;
 use app\repositories\PaymentMethodRepository;
 use app\services\CurrencyExchangeOrderService;
+use Faker\Provider\Payment;
 use Yii;
 use app\models\CurrencyExchangeOrder;
 use app\models\CurrencyExchangeOrderPaymentMethod;
@@ -92,8 +93,6 @@ class CurrencyExchangeOrderController extends Controller
         $model = new CurrencyExchangeOrder();
         $model->user_id = Yii::$app->user->identity->id;
 
-        $cashPaymentMethod = PaymentMethod::findOne(['type' => PaymentMethod::TYPE_CASH]);
-
         if ($model->load(($post = Yii::$app->request->post())) && $model->save()) {
 
             return $this->redirect(['view', 'id' => $model->id]);
@@ -102,7 +101,6 @@ class CurrencyExchangeOrderController extends Controller
         return $this->render('create', [
             'model' => $model,
             'currencies' => Currency::find()->all(),
-            'cashPaymentMethod' => $cashPaymentMethod,
         ]);
     }
 
@@ -118,8 +116,6 @@ class CurrencyExchangeOrderController extends Controller
         $model = $this->findModel($id);
 
         if ($model->load($post = Yii::$app->request->post()) && $model->save()) {
-
-
             return $this->redirect(['view', 'id' => $model->id]);
         }
 
@@ -140,9 +136,17 @@ class CurrencyExchangeOrderController extends Controller
 
         return $this->render('update_sell_buy_methods', [
             'model' => $model,
-            'paymentsBuyTypes' => PaymentMethod::find()->joinWith('currencies')->where(['currency.id' => $model->buying_currency_id])->all(),
-            'paymentsSellTypes' => PaymentMethod::find()->joinWith('currencies')->where(['currency.id' => $model->selling_currency_id])->all(),
+            'paymentsBuyTypes' => $this->getPaymentMethodsForCurrency($model->buying_currency_id),
+            'paymentsSellTypes' => $this->getPaymentMethodsForCurrency($model->selling_currency_id)
         ]);
+    }
+
+    private function getPaymentMethodsForCurrency(int $currency_id)
+    {
+        return PaymentMethod::find()->joinWith('currencies')
+            ->where(['currency.id' => $currency_id])
+            ->andWhere(['!=', 'payment_method.type', PaymentMethod::TYPE_CASH])
+            ->all();
     }
 
     /**

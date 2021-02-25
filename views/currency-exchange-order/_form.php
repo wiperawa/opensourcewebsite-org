@@ -23,7 +23,6 @@ use kartik\select2\Select2;
 /* @var $cashPaymentMethod PaymentMethod */
 
 $labelOptional = ' (' . Yii::t('app', 'optional') . ')';
-var_dump($model->errors);
 ?>
     <div class="currency-exchange-order-form">
         <?php $form = ActiveForm::begin(); ?>
@@ -32,20 +31,20 @@ var_dump($model->errors);
                 <div class="card">
                     <div class="card-body">
                         <?php if ($model->isNewRecord): ?>
-                            <?=$this->render('__sell_buy_currency_fields',
+                            <?= $this->render('__sell_buy_currency_fields',
                                 [
                                     'form' => $form,
                                     'model' => $model,
                                     'currencies' => $currencies
                                 ]
-                            )?>
+                            ) ?>
                         <?php else: ?>
                             <div class="row">
                                 <div class="col d-flex">
-                                    <p>Sell Currency:</p>&nbsp;<strong><?=$model->sellingCurrency->name?></strong>
+                                    <p>Sell Currency:</p>&nbsp;<strong><?= $model->sellingCurrency->name ?></strong>
                                 </div>
                                 <div class="col d-flex">
-                                    <p>Buying currency: </p>&nbsp;<strong><?=$model->buyingCurrency->name?></strong>
+                                    <p>Buying currency: </p>&nbsp;<strong><?= $model->buyingCurrency->name ?></strong>
                                 </div>
                             </div>
                         <?php endif; ?>
@@ -71,40 +70,39 @@ var_dump($model->errors);
                             </div>
                         </div>
 
-                        <?php if ($cashPaymentMethod): ?>
-                            <?=$this->render('_cash_method', [
-                                'form' => $form,
-                                'model' => $model,
-                                'cashPaymentMethod' => $cashPaymentMethod
-                            ])?>
-                        <?php endif; ?>
 
-                        <div class="location-radius-div" >
-                        <div class="row">
-                            <div class="col">
-                                <?= $form->field($model, 'delivery_radius')
-                                    ->textInput(['maxlength' => true])
-                                    ->label($model->getAttributeLabel('delivery_radius') . ', km' . $labelOptional); ?>
-                            </div>
-                        </div>
-                        <strong><?= Yii::t('app', 'Location')?></strong>
-                        <div class="row">
-                            <div class="col">
-                                <div class="input-group mb-3 align-items-start">
-                                    <?= $form->field($model, 'location', ['options' => ['class' => 'form-group flex-grow-1']])
-                                        ->textInput([
-                                            'maxlength' => true,
-                                            'id' => 'currency-exchange-order-location',
-                                            'class' => 'form-control flex-grow-1'
-                                        ])->label(false)
-                                    ?>
-                                    <span class="input-group-append">
-                                        <button type="button" class="btn btn-info btn-flat" data-toggle="modal"
-                                    data-target="#modal-xl">Map</button>
-                                    </span>
+                        <?= $this->render('_cash_method', [
+                            'form' => $form,
+                            'model' => $model,
+                        ]) ?>
+
+
+                        <div class="location-radius-div">
+                            <div class="row">
+                                <div class="col">
+                                    <?= $form->field($model, 'delivery_radius')
+                                        ->textInput(['maxlength' => true])
+                                        ->label($model->getAttributeLabel('delivery_radius') . ', km' . $labelOptional); ?>
                                 </div>
                             </div>
-                        </div>
+                            <strong><?= Yii::t('app', 'Location') ?></strong>
+                            <div class="row">
+                                <div class="col">
+                                    <div class="input-group mb-3 align-items-start">
+                                        <?= $form->field($model, 'location', ['options' => ['class' => 'form-group flex-grow-1']])
+                                            ->textInput([
+                                                'maxlength' => true,
+                                                'id' => 'currency-exchange-order-location',
+                                                'class' => 'form-control flex-grow-1'
+                                            ])->label(false)
+                                        ?>
+                                        <span class="input-group-append">
+                                        <button type="button" class="btn btn-info btn-flat" data-toggle="modal"
+                                                data-target="#modal-xl">Map</button>
+                                    </span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="card-footer">

@@ -51,8 +51,8 @@ class CurrencyExchangeOrder extends \yii\db\ActiveRecord
     public const CASH_OFF = 0;
     public const CASH_ON = 1;
 
-    public $_updateBuyingPaymentMethods = null;
-    public $_updateSellingPaymentMethods = null;
+    public $updateBuyingPaymentMethods = [];
+    public $updateSellingPaymentMethods = [];
 
     /**
      * {@inheritdoc}
@@ -208,14 +208,9 @@ class CurrencyExchangeOrder extends \yii\db\ActiveRecord
             ->viaTable('{{%currency_exchange_order_selling_payment_method}}', ['order_id' => 'id']);
     }
 
-    public function setUpdateSellingPaymentMethods(array $ids) {
-        if ([''] != $ids) {
-            $this->_updateSellingPaymentMethods = $ids;
-        }
-    }
 
     public function updateSellingPaymentMethods() {
-        $ids = $this->_updateSellingPaymentMethods;
+        $ids = $this->updateSellingPaymentMethods;
         if ($ids) {
             $currentMethodsIds = ArrayHelper::getColumn($this->getSellingPaymentMethods()->asArray()->all(), 'id');
 
@@ -241,14 +236,9 @@ class CurrencyExchangeOrder extends \yii\db\ActiveRecord
             ->viaTable('{{%currency_exchange_order_buying_payment_method}}', ['order_id' => 'id']);
     }
 
-    public function setUpdateBuyingPaymentMethods(array $ids) {
-        if ([''] != $ids) {
-            $this->_updateBuyingPaymentMethods = $ids;
-        }
-    }
 
     public function updateBuyingPaymentMethods() {
-        $ids = $this->_updateBuyingPaymentMethods;
+        $ids = $this->updateBuyingPaymentMethods;
         $s = !empty($ids);
         if ($ids) {
             $currentMethodsIds = ArrayHelper::getColumn($this->getBuyingPaymentMethods()->asArray()->all(), 'id');
@@ -264,14 +254,6 @@ class CurrencyExchangeOrder extends \yii\db\ActiveRecord
         }
     }
 
-    public function getUpdateBuyingPaymentMethods()
-    {
-        return $this->_updateBuyingPaymentMethods;
-    }
-    public function getUpdateSellingPaymentMethods()
-    {
-        return $this->_updateSellingPaymentMethods;
-    }
     /**
      * @return \yii\db\ActiveQuery
      * @throws \yii\base\InvalidConfigException
@@ -362,6 +344,19 @@ class CurrencyExchangeOrder extends \yii\db\ActiveRecord
         }
     }
 
+    public function linkSellingCashPaymentMethod()
+    {
+        if ($cashMethod = PaymentMethod::findOne(['type' => PaymentMethod::TYPE_CASH])) {
+            $this->link('sellingPaymentMethods', $cashMethod);
+        }
+    }
+    public function linkBuyingCashPaymentMethod()
+    {
+        if ($cashMethod = PaymentMethod::findOne(['type' => PaymentMethod::TYPE_CASH])) {
+            $this->link('buyingPaymentMethods', $cashMethod);
+        }
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -369,6 +364,13 @@ class CurrencyExchangeOrder extends \yii\db\ActiveRecord
     {
         $this->updateBuyingPaymentMethods();
         $this->updateSellingPaymentMethods();
+
+        if ($this->selling_cash_on ) {
+            $this->linkSellingCashPaymentMethod();
+        }
+        if ($this->buying_cash_on) {
+            $this->linkBuyingCashPaymentMethod();
+        }
 
         $clearMatches = false;
 
