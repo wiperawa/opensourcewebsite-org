@@ -2,13 +2,13 @@
 
 namespace app\models;
 
-use Faker\Provider\Payment;
 use Yii;
 use yii\behaviors\TimestampBehavior;
 use app\models\User as GlobalUser;
 use app\modules\bot\validators\RadiusValidator;
 use app\modules\bot\validators\LocationLatValidator;
 use app\modules\bot\validators\LocationLonValidator;
+use yii\db\ActiveRecord;
 use yii\helpers\ArrayHelper;
 use yii\web\JsExpression;
 
@@ -38,7 +38,7 @@ use yii\web\JsExpression;
  * @property CurrencyExchangeOrderMatch[] $currencyExchangeOrderMatches0
  * @property CurrencyExchangeOrderSellingPaymentMethod[] $currencyExchangeOrderSellingPaymentMethods
  */
-class CurrencyExchangeOrder extends \yii\db\ActiveRecord
+class CurrencyExchangeOrder extends ActiveRecord
 {
     public const STATUS_OFF = 0;
     public const STATUS_ON = 1;
@@ -76,6 +76,13 @@ class CurrencyExchangeOrder extends \yii\db\ActiveRecord
                 ],
                 'required',
             ],
+            ['selling_rate', 'required', 'when' => function ($model) {
+                return !$model->cross_rate_on;
+            }, 'whenClient' => new JsExpression(" function (attribute, value) {
+                    return !$('#crossRateCheckbox').prop('checked');
+                }
+            ")
+            ],
             [
                 [
                     'user_id',
@@ -104,10 +111,10 @@ class CurrencyExchangeOrder extends \yii\db\ActiveRecord
                 LocationLonValidator::class,
             ],
             ['location', 'required', 'when' => function ($model) {
-                $loc = $model->location;
                 if (($model->selling_cash_on || $model->buying_cash_on) && !$model->location) {
-                    $model->addError('location', 'Location is Required');
+                    return true;
                 }
+                return false;
             }, 'whenClient' => new JsExpression("function(attribute, value) {
                 return $('#cashBuyCheckbox').prop('checked') || $('#cashSellCheckbox').prop('checked');
             }")
@@ -395,7 +402,7 @@ class CurrencyExchangeOrder extends \yii\db\ActiveRecord
             Yii::warning('cross_rate_on2');
         }
 
-        if (isset($changedAttributes['selling_rate'])) {
+        if (!$this->cross_rate_on && (isset($changedAttributes['selling_rate']) || $insert)) {
             $this->buying_rate = 1 / $this->selling_rate;
             $this->cross_rate_on = self::CROSS_RATE_OFF;
             $this->save();
@@ -404,7 +411,7 @@ class CurrencyExchangeOrder extends \yii\db\ActiveRecord
             Yii::warning('selling_rate');
         }
 
-        if (isset($changedAttributes['buying_rate'])) {
+        if (!$this->cross_rate_on && ( isset($changedAttributes['buying_rate']) || $insert) ) {
             $this->selling_rate = 1 / $this->buying_rate;
             $this->cross_rate_on = self::CROSS_RATE_OFF;
             $this->save();

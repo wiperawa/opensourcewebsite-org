@@ -11,6 +11,7 @@ use dosamigos\leaflet\layers\TileLayer;
 use dosamigos\leaflet\types\LatLng;
 use dosamigos\leaflet\widgets\Map;
 use yii\helpers\ArrayHelper;
+use yii\helpers\Html;
 use yii\web\JsExpression;
 use yii\widgets\ActiveForm;
 use dosamigos\leaflet\LeafLet;
@@ -50,11 +51,38 @@ $labelOptional = ' (' . Yii::t('app', 'optional') . ')';
                         <?php endif; ?>
                         <div class="row">
                             <div class="col">
-                                <?= $form->field($model, 'selling_rate')
-                                    ->textInput(['maxlength' => true])
-                                    ->label($model->getAttributeLabel('selling_rate')); ?>
+                                <div class="custom-control custom-switch">
+                                    <input type="hidden" name="CurrencyExchangeOrder[cross_rate_on]" value="0" />
+                                    <input type="checkbox"
+                                           name="CurrencyExchangeOrder[cross_rate_on]"
+                                        <?=$model->cross_rate_on?'checked':''?>
+                                           value="1"
+                                           class="custom-control-input"
+                                           id="crossRateCheckbox"
+                                    >
+                                    <label class="custom-control-label" for="crossRateCheckbox"><?=$model->getAttributeLabel('cross_rate_on')?></label>
+                                </div>
                             </div>
                         </div>
+                        <div class="sell-buy-rates-div" <?=!$model->cross_rate_on?:'style="display: none;"'?>>
+                            <div class="row">
+                                <div class="col">
+                                    <?= $form->field($model, 'selling_rate')
+                                        ->textInput(['maxlength' => true])
+                                        ->label($model->getAttributeLabel('selling_rate')); ?>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <div class="form-group field-buying_rate">
+                                        <label class="control-label" for="buying_rate"><?=$model->getAttributeLabel('buying_rate')?></label>
+                                        <input type="text" id="buying_rate" class="form-control" name="buying_rate" value="<?=$model->buying_rate?>">
+                                        <div class="help-block"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <hr/>
                         <div class="row">
                             <div class="col">
                                 <?= $form->field($model, 'selling_currency_min_amount')
@@ -69,7 +97,7 @@ $labelOptional = ' (' . Yii::t('app', 'optional') . ')';
                                     ->label($model->getAttributeLabel('selling_currency_max_amount') . $labelOptional); ?>
                             </div>
                         </div>
-
+                        <hr/>
 
                         <?= $this->render('_cash_method', [
                             'form' => $form,
@@ -209,10 +237,37 @@ $jsMessages = [
 
 $this->registerJs(<<<JS
 
+$('#crossRateCheckbox').on('change', function(){
+    if (!$(this).prop('checked')) {
+        $('.sell-buy-rates-div').show();
+    } else {
+        $('.sell-buy-rates-div').hide();
+        $('#currencyexchangeorder-selling_rate').val('');
+        $('#currencyexchangeorder-buying_rate').val('');
+    }
+});
+
+const calculateCrossRate = (rate) => {
+    const curVal = parseFloat(rate);
+    if (!isNaN(curVal)) {
+        return (1/curVal).toFixed(8);
+    }
+    return '';
+}
+
+$('#currencyexchangeorder-selling_rate').on('change', function(){
+    $('#buying_rate').val(calculateCrossRate($(this).val()));
+});
+
+$('#buying_rate').on('change', function(){
+    $('#currencyexchangeorder-selling_rate').val(calculateCrossRate($(this).val()));
+});
+
 var position = {
     'lat': {$center->lat},
     'lng': {$center->lng}
-};
+}
+
 var location = $('#currency-exchange-order-location');
 
 $('#location-save-changes').on('click', function(e) {

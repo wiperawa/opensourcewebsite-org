@@ -21,19 +21,27 @@ $this->params['breadcrumbs'][] = '#' . $model->id;
                             <li class="nav-item align-self-center mr-3">
                                 <div class="input-group-prepend">
                                     <div class="dropdown">
-                                        <a class="btn <?=$model->isActive()?'btn-primary':'btn-secondary'?> dropdown-toggle" href="#" role="button"
+                                        <a class="btn <?= $model->isActive() ? 'btn-primary' : 'btn-default' ?> dropdown-toggle"
+                                           href="#" role="button"
                                            id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true"
                                            aria-expanded="false">
-                                            <?= $model->getAttributeLabel('Status'); ?>:&nbsp;<?=$model->isActive()?'active':'inactive'?>
+                                            <?= $model->getAttributeLabel('Status') ?>
+                                            :&nbsp;<?= $model->isActive() ? 'active' : 'inactive' ?>
                                         </a>
-                                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                                            <a class="dropdown-item status-update <?= $model->isActive() ? 'active' : '' ?>"
-                                               href="#"
-                                               data-value="<?= CurrencyExchangeOrder::STATUS_ON ?>">Active</a>
-                                            <a class="dropdown-item status-update <?= !$model->isActive() ? 'active' : '' ?>"
-                                               href="#"
-                                               data-value="<?= CurrencyExchangeOrder::STATUS_OFF ?>">Inactive</a>
-                                        </div>
+                                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                                            <li class="dropdown-header"><?= $model->getAttributeLabel('Status') ?></li>
+
+                                            <li>
+                                                <a class="dropdown-item status-update <?= $model->isActive() ? 'active' : '' ?>"
+                                                   href="#"
+                                                   data-value="<?= CurrencyExchangeOrder::STATUS_ON ?>">Active</a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item status-update <?= !$model->isActive() ? 'active' : '' ?>"
+                                                   href="#"
+                                                   data-value="<?= CurrencyExchangeOrder::STATUS_OFF ?>">Inactive</a>
+                                            </li>
+                                        </ul>
                                     </div>
                             </li>
                             <li class="nav-item align-self-center mr-3">
@@ -56,6 +64,12 @@ $this->params['breadcrumbs'][] = '#' . $model->id;
                                         <th class="align-middle"
                                             scope="col"><?= $model->getAttributeLabel('selling_currency_id') . '/' . $model->getAttributeLabel('buying_currency_id'); ?></th>
                                         <td class="align-middle"><?= $model->sellingCurrency->code . '/' . $model->buyingCurrency->code; ?></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <th class="align-middle"
+                                            scope="col"><?= $model->getAttributeLabel('cross_rate_on'); ?></th>
+                                        <td class="align-middle"><?= $model->cross_rate_on ? 'ON' : 'OFF' ?></td>
                                         <td></td>
                                     </tr>
                                     <tr>
