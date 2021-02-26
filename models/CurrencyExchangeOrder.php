@@ -193,7 +193,7 @@ class CurrencyExchangeOrder extends \yii\db\ActiveRecord
 
     public function getLocation(): string
     {
-        return ($this->location_lat && $this->location_lon) ? implode(',',[$this->location_lat, $this->location_lon]): '';
+        return ($this->location_lat && $this->location_lon) ? implode(',', [$this->location_lat, $this->location_lon]) : '';
     }
 
 
@@ -208,23 +208,6 @@ class CurrencyExchangeOrder extends \yii\db\ActiveRecord
             ->viaTable('{{%currency_exchange_order_selling_payment_method}}', ['order_id' => 'id']);
     }
 
-
-    public function updateSellingPaymentMethods() {
-        $ids = $this->updateSellingPaymentMethods;
-        if ($ids) {
-            $currentMethodsIds = ArrayHelper::getColumn($this->getSellingPaymentMethods()->asArray()->all(), 'id');
-
-            $toDelete = array_diff($currentMethodsIds, $ids);
-            $toLink = array_diff($ids, $currentMethodsIds);
-
-            CurrencyExchangeOrderSellingPaymentMethod::deleteAll(['AND', ['order_id' => $this->id], ['in', 'payment_method_id', $toDelete]]);
-
-            foreach ($toLink as $id) {
-                $this->link('sellingPaymentMethods', PaymentMethod::findOne($id));
-            }
-        }
-    }
-
     /**
      * Gets query for [[CurrencyExchangeOrderBuyingPaymentMethods]].
      *
@@ -234,24 +217,6 @@ class CurrencyExchangeOrder extends \yii\db\ActiveRecord
     {
         return $this->hasMany(PaymentMethod::className(), ['id' => 'payment_method_id'])
             ->viaTable('{{%currency_exchange_order_buying_payment_method}}', ['order_id' => 'id']);
-    }
-
-
-    public function updateBuyingPaymentMethods() {
-        $ids = $this->updateBuyingPaymentMethods;
-        $s = !empty($ids);
-        if ($ids) {
-            $currentMethodsIds = ArrayHelper::getColumn($this->getBuyingPaymentMethods()->asArray()->all(), 'id');
-
-            $toDelete = array_diff($currentMethodsIds, $ids);
-            $toLink = array_diff($ids, $currentMethodsIds);
-
-            CurrencyExchangeOrderBuyingPaymentMethod::deleteAll(['AND', ['order_id' => $this->id], ['in', 'payment_method_id', $toDelete]]);
-
-            foreach ($toLink as $id) {
-                $this->link('buyingPaymentMethods', PaymentMethod::findOne($id));
-            }
-        }
     }
 
     /**
@@ -344,17 +309,65 @@ class CurrencyExchangeOrder extends \yii\db\ActiveRecord
         }
     }
 
-    public function linkSellingCashPaymentMethod()
+    public function updateBuyingPaymentMethods()
     {
-        if ($cashMethod = PaymentMethod::findOne(['type' => PaymentMethod::TYPE_CASH])) {
-            $this->link('sellingPaymentMethods', $cashMethod);
+        $newMethodsIds = array_map(fn($val) => intval($val), $this->updateBuyingPaymentMethods);
+
+        $cashMethod = PaymentMethod::findOne(['type' => PaymentMethod::TYPE_CASH]);
+
+        $currentMethodsIds = ArrayHelper::getColumn($this->getBuyingPaymentMethods()->asArray()->all(), 'id');
+        $currentMethodsIds = array_map(fn($val) => intval($val), $currentMethodsIds);
+
+        $toDelete = $newMethodsIds? array_values(array_diff($currentMethodsIds, $newMethodsIds)): [];
+        $toLink = $newMethodsIds? array_values(array_diff($newMethodsIds, $currentMethodsIds)): [];
+
+        if ($this->buying_cash_on) {
+            $toDelete = array_diff($toDelete, [$cashMethod->id]);
+            if (!in_array($cashMethod->id, $currentMethodsIds)) {
+                $toLink[] = $cashMethod->id;
+            }
+        } else {
+            $toDelete[] = $cashMethod->id;
         }
+
+        if ($toDelete) {
+            CurrencyExchangeOrderBuyingPaymentMethod::deleteAll(['AND', ['order_id' => $this->id], ['in', 'payment_method_id', $toDelete]]);
+        }
+
+        foreach ($toLink as $id) {
+            $this->link('buyingPaymentMethods', PaymentMethod::findOne($id));
+        }
+
     }
-    public function linkBuyingCashPaymentMethod()
+
+    public function updateSellingPaymentMethods()
     {
-        if ($cashMethod = PaymentMethod::findOne(['type' => PaymentMethod::TYPE_CASH])) {
-            $this->link('buyingPaymentMethods', $cashMethod);
+        $newMethodsIds = array_map(fn($val) => intval($val), $this->updateSellingPaymentMethods);
+
+        $cashMethod = PaymentMethod::findOne(['type' => PaymentMethod::TYPE_CASH]);
+
+        $currentMethodsIds = ArrayHelper::getColumn($this->getSellingPaymentMethods()->asArray()->all(), 'id');
+        $currentMethodsIds = array_map(fn($val) => intval($val), $currentMethodsIds);
+
+        $toDelete = $newMethodsIds? array_values(array_diff($currentMethodsIds, $newMethodsIds)):[];
+        $toLink = $newMethodsIds? array_values(array_diff($newMethodsIds, $currentMethodsIds)): [];
+
+        if ($this->selling_cash_on) {
+            $toDelete = array_diff($toDelete, [$cashMethod->id]);
+            if (!in_array($cashMethod->id, $currentMethodsIds)) {
+                $toLink[] = $cashMethod->id;
+            }
+        } else {
+            $toDelete[] = $cashMethod->id;
         }
+
+        if ($toDelete) {
+            CurrencyExchangeOrderSellingPaymentMethod::deleteAll(['AND', ['order_id' => $this->id], ['in', 'payment_method_id', $toDelete]]);
+        }
+        foreach ($toLink as $id) {
+            $this->link('sellingPaymentMethods', PaymentMethod::findOne($id));
+        }
+
     }
 
     /**
@@ -365,12 +378,6 @@ class CurrencyExchangeOrder extends \yii\db\ActiveRecord
         $this->updateBuyingPaymentMethods();
         $this->updateSellingPaymentMethods();
 
-        if ($this->selling_cash_on ) {
-            $this->linkSellingCashPaymentMethod();
-        }
-        if ($this->buying_cash_on) {
-            $this->linkBuyingCashPaymentMethod();
-        }
 
         $clearMatches = false;
 

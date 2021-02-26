@@ -16,6 +16,7 @@ use yii\widgets\ActiveForm;
     <div class="row">
         <div class="col">
             <div class="custom-control custom-switch">
+                <input type="hidden" name="CurrencyExchangeOrder[selling_cash_on]" value="0" />
                 <input type="checkbox"
                        name="CurrencyExchangeOrder[selling_cash_on]"
                        <?=$model->selling_cash_on?'checked':''?>
@@ -26,6 +27,7 @@ use yii\widgets\ActiveForm;
                 <label class="custom-control-label" for="cashSellCheckbox">Cash Sell</label>
             </div>
             <div class="custom-control custom-switch">
+                <input type="hidden" name="CurrencyExchangeOrder[buying_cash_on]" value="0" />
                 <input type="checkbox"
                        name="CurrencyExchangeOrder[buying_cash_on]"
                        <?=$model->buying_cash_on?'checked':''?>
