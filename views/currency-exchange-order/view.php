@@ -10,6 +10,7 @@ use yii\helpers\ArrayHelper;
 $this->title = Yii::t('app', 'Currency Exchange Order') . ' ' . $model->id;
 $this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'Currency Exchange Orders'), 'url' => ['index']];
 $this->params['breadcrumbs'][] = '#' . $model->id;
+
 ?>
 
     <div class="currency-exchange-order-view">
@@ -28,20 +29,17 @@ $this->params['breadcrumbs'][] = '#' . $model->id;
                                             <?= $model->getAttributeLabel('Status') ?>
                                             :&nbsp;<?= $model->isActive() ? 'active' : 'inactive' ?>
                                         </a>
-                                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                                            <li class="dropdown-header"><?= $model->getAttributeLabel('Status') ?></li>
+                                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                                            <h6 class="dropdown-header"><?= $model->getAttributeLabel('Status') ?></h6>
 
-                                            <li>
-                                                <a class="dropdown-item status-update <?= $model->isActive() ? 'active' : '' ?>"
-                                                   href="#"
-                                                   data-value="<?= CurrencyExchangeOrder::STATUS_ON ?>">Active</a>
-                                            </li>
-                                            <li>
-                                                <a class="dropdown-item status-update <?= !$model->isActive() ? 'active' : '' ?>"
-                                                   href="#"
-                                                   data-value="<?= CurrencyExchangeOrder::STATUS_OFF ?>">Inactive</a>
-                                            </li>
-                                        </ul>
+                                            <a class="dropdown-item status-update <?= $model->isActive() ? 'active' : '' ?>"
+                                               href="#"
+                                               data-value="<?= CurrencyExchangeOrder::STATUS_ON ?>">Active</a>
+
+                                            <a class="dropdown-item status-update <?= !$model->isActive() ? 'active' : '' ?>"
+                                               href="#"
+                                               data-value="<?= CurrencyExchangeOrder::STATUS_OFF ?>">Inactive</a>
+                                        </div>
                                     </div>
                             </li>
                             <li class="nav-item align-self-center mr-3">
@@ -107,41 +105,75 @@ $this->params['breadcrumbs'][] = '#' . $model->id;
                                         <td class="align-middle"><?= $model->location_lat . ', ' . $model->location_lon; ?></td>
                                         <td></td>
                                     </tr>
-                                    <tr>
-                                        <th class="align-middle"
-                                            scope="col"><?= Yii::t('app', 'Payment methods for Sell'); ?></th>
-                                        <td class="align-middle">
-                                            <?= implode(',', ArrayHelper::getColumn(
-                                                $model->getSellingPaymentMethods()->asArray()->all(),
-                                                'name'
-                                            ));
-                                            ?>
-                                        </td>
-                                        <td>
-                                            <a class="edit-btn edit-btn-ajax"
-                                               href="/currency-exchange-order/update-sell-buy-methods/<?= $model->id ?>"
-                                               title="Edit" style="float: right">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th class="align-middle"
-                                            scope="col"><?= Yii::t('app', 'Payment methods for Buy'); ?></th>
-                                        <td class="align-middle">
-                                            <?= implode(',', ArrayHelper::getColumn(
-                                                $model->getBuyingPaymentMethods()->asArray()->all(),
-                                                'name'
-                                            ));
-                                            ?>
-                                        </td>
-                                        <td><a class="edit-btn edit-btn-ajax"
-                                               href="/currency-exchange-order/update-sell-buy-methods/<?= $model->id ?>"
-                                               title="Edit" style="float: right"><i class="fas fa-edit"></i></a></td>
-                                    </tr>
                                     </tbody>
                                 </table>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title"><?=Yii::t('app', 'Payment methods for Sell')?></h3>
+                    <div class="card-tools">
+                        <a class="edit-btn edit-btn-ajax"
+                           href="/currency-exchange-order/update-sell-methods/<?= $model->id ?>"
+                           title="Edit" style="float: right">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <div id="w0" class="grid-view">
+                            <table class="table table-condensed table-hover" style="margin-bottom: 0;">
+                                <tbody>
+                                    <?php foreach ($model->getSellingPaymentMethods()->all() as $method):?>
+                                        <tr>
+                                            <td>
+                                                <?=$method->name?>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach;?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title"><?=Yii::t('app', 'Payment methods for Buy')?></h3>
+                    <div class="card-tools">
+                        <a class="edit-btn edit-btn-ajax"
+                           href="/currency-exchange-order/update-buy-methods/<?= $model->id ?>"
+                           title="Edit" style="float: right">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <div id="w0" class="grid-view">
+                            <table class="table table-condensed table-hover" style="margin-bottom: 0;">
+                                <tbody>
+                                    <?php foreach ($model->getBuyingPaymentMethods()->all() as $method):?>
+                                        <tr>
+                                            <td>
+                                                <?=$method->name?>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach;?>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -152,6 +184,12 @@ $this->params['breadcrumbs'][] = '#' . $model->id;
 <?php
 $url = Yii::$app->urlManager->createUrl(['currency-exchange-order/status?id=' . $model->id]);
 $script = <<<JS
+
+$('.edit-btn-ajax').on('click', function(e){
+    e.preventDefault();
+    $('#main-modal').find('.modal-content').load($(this).attr('href'), function(){ $('#main-modal').modal('show') });
+    return false;
+});
 
 $('.status-update').on("click", function(event) {
     var status = $(this).data('value');

@@ -126,7 +126,7 @@ class CurrencyExchangeOrderController extends Controller
     }
 
 
-    public function actionUpdateSellBuyMethods($id)
+    public function actionUpdateSellMethods($id)
     {
         $model = $this->findModel($id);
 
@@ -134,10 +134,23 @@ class CurrencyExchangeOrderController extends Controller
             return $this->redirect(['view', 'id' => $model->id]);
         }
 
-        return $this->render('update_sell_buy_methods', [
+        return $this->renderAjax('update_sell_methods', [
+            'model' => $model,
+            'paymentsSellTypes' => $this->getPaymentMethodsForCurrency($model->selling_currency_id)
+        ]);
+    }
+
+    public function actionUpdateBuyMethods($id)
+    {
+        $model = $this->findModel($id);
+
+        if ($model->load(Yii::$app->request->post()) && $model->save() ) {
+            return $this->redirect(['view', 'id' => $model->id]);
+        }
+
+        return $this->renderAjax('update_buy_methods', [
             'model' => $model,
             'paymentsBuyTypes' => $this->getPaymentMethodsForCurrency($model->buying_currency_id),
-            'paymentsSellTypes' => $this->getPaymentMethodsForCurrency($model->selling_currency_id)
         ]);
     }
 
