@@ -14,6 +14,7 @@ abstract class ARGenerator extends Fixture
 
     /**
      * magic getter for `$this->faker`
+     * initialize singleton faker
      * @return Generator
      */
     public static function getFaker(): Generator
@@ -33,18 +34,19 @@ abstract class ARGenerator extends Fixture
     /**
      * @throws ARGeneratorException
      */
-    public function load(): ?ActiveRecord
+    public function load(): ActiveRecord
     {
         $model = $this->factoryModel();
 
-        if ($model && !$model->save()) {
-            throw new ARGeneratorException($model);
+        if (!$model || !$model->save()) {
+
+            throw new ARGeneratorException("Can't create ".static::classNameModel().", factoryModel returned null\r\n");
         }
 
         return $model;
     }
 
-    public static function classNameModel()
+    public static function classNameModel(): string
     {
         $classFull  = explode('\\', static::class);
         $classShort = end($classFull);
