@@ -8,6 +8,7 @@ use app\models\User as GlobalUser;
 use app\modules\bot\validators\RadiusValidator;
 use app\modules\bot\validators\LocationLatValidator;
 use app\modules\bot\validators\LocationLonValidator;
+use yii\db\ActiveQuery;
 use yii\db\ActiveRecord;
 use yii\helpers\ArrayHelper;
 use yii\web\JsExpression;
@@ -208,10 +209,11 @@ class CurrencyExchangeOrder extends ActiveRecord
      * Gets query for [[CurrencyExchangeOrderSellingPaymentMethods]].
      *
      * @return \yii\db\ActiveQuery
+     * @throws \yii\base\InvalidConfigException
      */
-    public function getSellingPaymentMethods()
+    public function getSellingPaymentMethods(): ActiveQuery
     {
-        return $this->hasMany(PaymentMethod::className(), ['id' => 'payment_method_id'])
+        return $this->hasMany(PaymentMethod::class, ['id' => 'payment_method_id'])
             ->viaTable('{{%currency_exchange_order_selling_payment_method}}', ['order_id' => 'id']);
     }
 
@@ -220,9 +222,9 @@ class CurrencyExchangeOrder extends ActiveRecord
      *
      * @return \yii\db\ActiveQuery
      */
-    public function getBuyingPaymentMethods()
+    public function getBuyingPaymentMethods(): ActiveQuery
     {
-        return $this->hasMany(PaymentMethod::className(), ['id' => 'payment_method_id'])
+        return $this->hasMany(PaymentMethod::class, ['id' => 'payment_method_id'])
             ->viaTable('{{%currency_exchange_order_buying_payment_method}}', ['order_id' => 'id']);
     }
 
@@ -230,9 +232,9 @@ class CurrencyExchangeOrder extends ActiveRecord
      * @return \yii\db\ActiveQuery
      * @throws \yii\base\InvalidConfigException
      */
-    public function getMatches()
+    public function getMatches(): ActiveQuery
     {
-        return $this->hasMany(self::className(), ['id' => 'match_order_id'])
+        return $this->hasMany(self::class, ['id' => 'match_order_id'])
             ->viaTable('{{%currency_exchange_order_match}}', ['order_id' => 'id']);
     }
 
@@ -240,9 +242,9 @@ class CurrencyExchangeOrder extends ActiveRecord
      * @return \yii\db\ActiveQuery
      * @throws \yii\base\InvalidConfigException
      */
-    public function getCounterMatches()
+    public function getCounterMatches(): ActiveQuery
     {
-        return $this->hasMany(self::className(), ['id' => 'order_id'])
+        return $this->hasMany(self::class, ['id' => 'order_id'])
             ->viaTable('{{%currency_exchange_order_match}}', ['match_order_id' => 'id']);
     }
 
@@ -251,12 +253,40 @@ class CurrencyExchangeOrder extends ActiveRecord
         $this->unlinkAll('matches', true);
         $this->unlinkAll('counterMatches', true);
 
-        return true;
+        $tblName = static::tableName();
+
+        $matchesQuery = static::find()
+            ->where(['!=',   "$tblName.user_id", $this->user_id])
+            ->andWhere(["$tblName.status" => static::STATUS_ON])
+            ->andWhere(["$tblName.buying_currency_id" => $this->selling_currency_id])
+            ->andWhere(["$tblName.selling_currency_id" => $this->buying_currency_id]);
+
+        $matchesQuery->andWhere(["$tblName.buying_cash_on" => $this->selling_cash_on]);
+
+        $matchesQuery->andWhere(["$tblName.selling_cash_on" => $this->buying_cash_on]);
+
+        if (!$this->cross_rate_on) {
+            $matchesQuery->andWhere(["$tblName.cross_rate_on" => false])
+                ->andWhere(['<=', "$tblName.selling_rate", $this->buying_rate]);
+        } else {
+            $matchesQuery->andWhere(["$tblName.cross_rate_on" => true]);
+        }
+
+        if (($this->selling_cash_on || $this->buying_cash_on) && $this->delivery_radius && $this->location_lat && $this->location_lon) {
+            $matchesQuery->andWhere("ST_Distance_Sphere(POINT($this->location_lon, $this->location_lat),
+                POINT($tblName.location_lon, $tblName.location_lat)) <= 1000 * ($tblName.delivery_radius + $this->delivery_radius)");
+        }
+
+        foreach ($matchesQuery->all() as $matchedOrder) {
+            $this->link('matches', $matchedOrder);
+            $this->link('counterMatches', $matchedOrder);
+        }
+
     }
 
     public function getGlobalUser()
     {
-        return $this->hasOne(GlobalUser::className(), ['id' => 'user_id']);
+        return $this->hasOne(GlobalUser::class, ['id' => 'user_id']);
     }
 
     /**
@@ -325,8 +355,8 @@ class CurrencyExchangeOrder extends ActiveRecord
         $currentMethodsIds = ArrayHelper::getColumn($this->getBuyingPaymentMethods()->asArray()->all(), 'id');
         $currentMethodsIds = array_map(fn($val) => intval($val), $currentMethodsIds);
 
-        $toDelete = $newMethodsIds? array_values(array_diff($currentMethodsIds, $newMethodsIds)): [];
-        $toLink = $newMethodsIds? array_values(array_diff($newMethodsIds, $currentMethodsIds)): [];
+        $toDelete = $newMethodsIds ? array_values(array_diff($currentMethodsIds, $newMethodsIds)) : [];
+        $toLink = $newMethodsIds ? array_values(array_diff($newMethodsIds, $currentMethodsIds)) : [];
 
         if ($this->buying_cash_on) {
             $toDelete = array_diff($toDelete, [$cashMethod->id]);
@@ -356,8 +386,8 @@ class CurrencyExchangeOrder extends ActiveRecord
         $currentMethodsIds = ArrayHelper::getColumn($this->getSellingPaymentMethods()->asArray()->all(), 'id');
         $currentMethodsIds = array_map(fn($val) => intval($val), $currentMethodsIds);
 
-        $toDelete = $newMethodsIds? array_values(array_diff($currentMethodsIds, $newMethodsIds)):[];
-        $toLink = $newMethodsIds? array_values(array_diff($newMethodsIds, $currentMethodsIds)): [];
+        $toDelete = $newMethodsIds ? array_values(array_diff($currentMethodsIds, $newMethodsIds)) : [];
+        $toLink = $newMethodsIds ? array_values(array_diff($newMethodsIds, $currentMethodsIds)) : [];
 
         if ($this->selling_cash_on) {
             $toDelete = array_diff($toDelete, [$cashMethod->id]);
@@ -411,7 +441,7 @@ class CurrencyExchangeOrder extends ActiveRecord
             Yii::warning('selling_rate');
         }
 
-        if (!$this->cross_rate_on && ( isset($changedAttributes['buying_rate']) || $insert) ) {
+        if (!$this->cross_rate_on && (isset($changedAttributes['buying_rate']) || $insert)) {
             $this->selling_rate = 1 / $this->buying_rate;
             $this->cross_rate_on = self::CROSS_RATE_OFF;
             $this->save();

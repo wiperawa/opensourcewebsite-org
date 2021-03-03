@@ -34,7 +34,7 @@ class CronController extends Controller
      *
      * @var array
      */
-    static protected $map = [
+    /*static protected array $map = [
         'AdMatch',
         'JobMatch',
         'BotCommand',
@@ -43,6 +43,10 @@ class CronController extends Controller
         'UaLawmakingParser',
         'WikipediaParser',
         'WikinewsParser',
+    ];*/
+
+    static protected array $map = [
+        'CurrencyExchangeMatch'
     ];
 
     /**

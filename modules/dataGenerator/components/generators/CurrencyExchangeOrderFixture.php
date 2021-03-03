@@ -11,7 +11,7 @@ use yii\db\ActiveRecord;
 use yii\db\Exception;
 use yii\helpers\Console;
 
-class ExchangeOrderFixture extends ARGenerator
+class CurrencyExchangeOrderFixture extends ARGenerator
 {
     /**
      * @throws ARGeneratorException
