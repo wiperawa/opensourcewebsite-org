@@ -26,8 +26,7 @@ $this->params['breadcrumbs'][] = '#' . $model->id;
                                            href="#" role="button"
                                            id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true"
                                            aria-expanded="false">
-                                            <?= $model->getAttributeLabel('Status') ?>
-                                            :&nbsp;<?= $model->isActive() ? 'active' : 'inactive' ?>
+                                            <?= $model->isActive() ? 'active' : 'inactive' ?>
                                         </a>
                                         <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
                                             <h6 class="dropdown-header"><?= $model->getAttributeLabel('Status') ?></h6>
