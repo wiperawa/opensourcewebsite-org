@@ -7,7 +7,6 @@ use yii\console\Controller;
 use app\interfaces\CronChainedInterface;
 use app\commands\traits\ControllerLogTrait;
 use app\models\CurrencyExchangeOrder;
-use yii\console\Exception;
 
 /**
  * Class CeMatchController
@@ -40,6 +39,7 @@ class CeMatchController extends Controller implements CronChainedInterface
             ->orderBy(['user.rating' => SORT_DESC])
             ->addOrderBy(['user.created_at' => SORT_ASC]);
 
+        /** @var CurrencyExchangeOrder $order */
         foreach ($orderQuery->all() as $order) {
             try {
                 $order->updateMatches();
@@ -49,7 +49,7 @@ class CeMatchController extends Controller implements CronChainedInterface
                 ]);
                 $order->save();
                 $updatesCount++;
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 echo 'ERROR: Order #' . $order->id . ': ' . $e->getMessage() . "\n";
             }
         }
