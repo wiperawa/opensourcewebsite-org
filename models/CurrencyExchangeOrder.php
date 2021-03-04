@@ -159,9 +159,15 @@ class CurrencyExchangeOrder extends ActiveRecord
                 [
                     'selling_currency_max_amount',
                 ],
-                'compare', 'when' => function ($model) {
-                return $model->selling_currency_min_amount != null;
-            }, 'whenClient' => new JsExpression("function (attribute, value) {return $('#currencyexchangeorder-selling_currency_min_amount').val() != '' }"),
+                'compare',
+                'when' => function ($model) {
+                    return $model->selling_currency_min_amount != null;
+                },
+                'whenClient' => new JsExpression("
+                    function (attribute, value) {
+                        return $('#currencyexchangeorder-selling_currency_min_amount').val() != ''
+                    }"
+                ),
                 'compareAttribute' => 'selling_currency_min_amount', 'operator' => '>=', 'type' => 'number'
             ]
         ];
