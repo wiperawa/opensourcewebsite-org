@@ -6,6 +6,7 @@ use yii\helpers\Html;
 use yii\grid\GridView;
 use yii\grid\ActionColumn;
 use app\models\CurrencyExchangeOrder;
+use yii\helpers\Url;
 
 /* @var $this yii\web\View */
 /* @var $dataProvider yii\data\ActiveDataProvider */
@@ -76,23 +77,25 @@ $this->params['breadcrumbs'][] = $this->title;
                             [
                                 'attribute' => 'selling_currency_min_amount',
                                 'value' => function ($model) {
-                                    return round($model->selling_currency_min_amount, 2);
+                                    return $model->getSellingCurrencyMinAmount();
                                 },
                                 'enableSorting' => false,
                             ],
                             [
                                 'attribute' => 'selling_currency_max_amount',
                                 'value' => function ($model) {
-                                    return round($model->selling_currency_max_amount, 2);
+                                    return $model->getSellingCurrencyMaxAmount();
                                 },
                                 'enableSorting' => false,
                             ],
                             [
                                 'label' => Yii::t('app', 'Offers'),
-                                'value' => function () {
-
-                                    return 2;
+                                'value' => function ($model) {
+                                    return $model->getMatches()->count()?
+                                        Html::a($model->getMatches()->count(), Url::to(['view', 'id'=>$model->id])):
+                                        '';
                                 },
+                                'format' => 'raw',
                                 'enableSorting' => false,
                             ],
                             [

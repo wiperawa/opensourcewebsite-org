@@ -142,6 +142,15 @@ class CurrencyExchangeOrder extends ActiveRecord
                 'min' => 0,
                 'max' => 9999999999.99999999,
             ],
+            [
+                [
+                    'selling_currency_max_amount',
+                ],
+                'compare', 'when' => function ($model) {
+                return $model->selling_currency_min_amount != null;
+            }, 'whenClient' => new JsExpression("function (attribute, value) {return $('#currencyexchangeorder-selling_currency_min_amount').val() != '' }"),
+                'compareAttribute' => 'selling_currency_min_amount', 'operator' => '>', 'type' => 'number'
+            ]
         ];
     }
 
@@ -256,7 +265,7 @@ class CurrencyExchangeOrder extends ActiveRecord
         $tblName = static::tableName();
 
         $matchesQuery = static::find()
-            ->where(['!=',   "$tblName.user_id", $this->user_id])
+            ->where(['!=', "$tblName.user_id", $this->user_id])
             ->andWhere(["$tblName.status" => static::STATUS_ON])
             ->andWhere(["$tblName.buying_currency_id" => $this->selling_currency_id])
             ->andWhere(["$tblName.selling_currency_id" => $this->buying_currency_id]);
@@ -463,10 +472,7 @@ class CurrencyExchangeOrder extends ActiveRecord
         parent::afterSave($insert, $changedAttributes);
     }
 
-    /**
-     * @return array
-     */
-    public function notPossibleToChangeStatus()
+    public function notPossibleToChangeStatus(): array
     {
         $notFilledFields = [];
 
@@ -479,10 +485,7 @@ class CurrencyExchangeOrder extends ActiveRecord
         return $notFilledFields;
     }
 
-    /**
-     * @return string
-     */
-    public function getSellingCurrencyMinAmount()
+    public function getSellingCurrencyMinAmount(): string
     {
         if ($this->selling_currency_min_amount) {
             return number_format($this->selling_currency_min_amount, 2);
@@ -491,10 +494,7 @@ class CurrencyExchangeOrder extends ActiveRecord
         }
     }
 
-    /**
-     * @return string
-     */
-    public function getSellingCurrencyMaxAmount()
+    public function getSellingCurrencyMaxAmount(): string
     {
         if ($this->selling_currency_max_amount) {
             return number_format($this->selling_currency_max_amount, 2);
@@ -503,7 +503,38 @@ class CurrencyExchangeOrder extends ActiveRecord
         }
     }
 
-    public function hasAmount()
+    public function getSellingCrossRate(): ?CurrencyRate
+    {
+        return CurrencyRate::find()->where(['from_currency_id' => $this->selling_currency_id, 'to_currency_id' => $this->buying_currency_id])->one();
+    }
+
+    public function getBuyingCrossRate(): ?CurrencyRate
+    {
+        return CurrencyRate::find()->where(['from_currency_id' => $this->buying_currency_id, 'to_currency_id' => $this->selling_currency_id])->one();
+    }
+
+    public function getCurrentSellingRate(): float
+    {
+        if ($this->cross_rate_on) {
+            return $this->getSellingCrossRate() ?
+                $this->getSellingCrossRate()->rate :
+                ( $this->getBuyingCrossRate() ? (1 / $this->getBuyingCrossRate()->rate ) : 0) ;
+        }
+
+        return $this->selling_rate;
+    }
+
+    public function getCurrentBuyingRate(): float
+    {
+        if ($this->cross_rate_on) {
+            return $this->getBuyingCrossRate() ?
+                $this->getBuyingCrossRate()->rate :
+                ($this->getSellingCrossRate() ? (1 / $this->getSellingCrossRate()->rate) : 0);
+        }
+        return $this->buying_rate;
+    }
+
+    public function hasAmount(): bool
     {
         if ($this->selling_currency_min_amount || $this->selling_currency_max_amount) {
             return true;

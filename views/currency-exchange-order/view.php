@@ -65,32 +65,26 @@ $this->params['breadcrumbs'][] = '#' . $model->id;
                                     </tr>
                                     <tr>
                                         <th class="align-middle"
-                                            scope="col"><?= $model->getAttributeLabel('cross_rate_on'); ?></th>
-                                        <td class="align-middle"><?= $model->cross_rate_on ? 'ON' : 'OFF' ?></td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
-                                        <th class="align-middle"
                                             scope="col"><?= $model->getAttributeLabel('selling_rate'); ?></th>
-                                        <td class="align-middle"><?= $model->selling_rate; ?></td>
+                                        <td class="align-middle"><?= round($model->getCurrentSellingRate(), 8) ?></td>
                                         <td></td>
                                     </tr>
                                     <tr>
                                         <th class="align-middle"
                                             scope="col"><?= $model->getAttributeLabel('buying_rate'); ?></th>
-                                        <td class="align-middle"><?= $model->buying_rate; ?></td>
+                                        <td class="align-middle"><?= round($model->getCurrentBuyingRate(), 8) ?></td>
                                         <td></td>
                                     </tr>
                                     <tr>
                                         <th class="align-middle"
                                             scope="col"><?= $model->getAttributeLabel('selling_currency_min_amount'); ?></th>
-                                        <td class="align-middle"><?= $model->selling_currency_min_amount; ?></td>
+                                        <td class="align-middle"><?= $model->getSellingCurrencyMinAmount() ?></td>
                                         <td></td>
                                     </tr>
                                     <tr>
                                         <th class="align-middle"
                                             scope="col"><?= $model->getAttributeLabel('selling_currency_max_amount'); ?></th>
-                                        <td class="align-middle"><?= $model->selling_currency_max_amount; ?></td>
+                                        <td class="align-middle"><?= $model->getSellingCurrencyMaxAmount() ?></td>
                                         <td></td>
                                     </tr>
                                     <tr>
