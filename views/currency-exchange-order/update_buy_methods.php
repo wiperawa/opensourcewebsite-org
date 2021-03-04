@@ -22,36 +22,41 @@ $this->title = Yii::t('app', 'Update Currency Exchange Order Payment Buy Methods
 </div>
 <div class="modal-body">
 
+    <?php if (!$paymentsBuyTypes) : ?>
+        <h3 class="text-center">
+            <?= Yii::t('app', 'Currently there is no Payment Methods available for selected currency') ?>
+        </h3>
+    <?php else: ?>
+        <div class="currency-exchange-order-form">
 
-    <div class="currency-exchange-order-form">
+            <?php ActiveForm::begin() ?>
+            <div class="row">
+                <div class="col-12">
 
-        <?php ActiveForm::begin() ?>
-        <div class="row">
-            <div class="col-12">
+                    <label class="control-label"><?= Yii::t('app', 'Payment methods for Buy'); ?></label>
+                    <?= Select2::widget([
+                        'name' => 'CurrencyExchangeOrder[updateBuyingPaymentMethods]',
+                        'theme' => Select2::THEME_DEFAULT,
+                        'data' => ArrayHelper::map($paymentsBuyTypes, 'id', 'name'),
+                        'value' => ArrayHelper::getColumn($model->getBuyingPaymentMethods()->all(), 'id'),
+                        'options' => [
+                            'placeholder' => 'Select a payment...',
+                            'multiple' => true,
+                        ],
+                        'pluginOptions' => [
+                            'allowClear' => true,
+                            'closeOnSelect' => false,
+                        ],
+                    ]); ?>
 
-                <label class="control-label"><?= Yii::t('app', 'Payment methods for Buy'); ?></label>
-                <?= Select2::widget([
-                    'name' => 'CurrencyExchangeOrder[updateBuyingPaymentMethods]',
-                    'theme' => Select2::THEME_DEFAULT,
-                    'data' => ArrayHelper::map($paymentsBuyTypes, 'id', 'name'),
-                    'value' => ArrayHelper::getColumn($model->getBuyingPaymentMethods()->all(), 'id'),
-                    'options' => [
-                        'placeholder' => 'Select a payment...',
-                        'multiple' => true,
-                    ],
-                    'pluginOptions' => [
-                        'allowClear' => true,
-                        'closeOnSelect' => false,
-                    ],
-                ]); ?>
+                    <div class="modal-footer">
+                        <?= SaveButton::widget(); ?>
+                        <?= CancelButton::widget(['url' => ['view', 'id' => $model->id]]); ?>
+                    </div>
 
-                <div class="modal-footer">
-                    <?= SaveButton::widget(); ?>
-                    <?= CancelButton::widget(['url' => ['view', 'id' => $model->id]]); ?>
                 </div>
-
             </div>
+            <?php ActiveForm::end() ?>
         </div>
-        <?php ActiveForm::end() ?>
-    </div>
+    <?php endif; ?>
 </div>

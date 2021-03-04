@@ -23,6 +23,11 @@ $this->title = Yii::t('app', 'Update Currency Exchange Order Payment Sell Method
 </div>
 <div class="modal-body">
 
+    <?php if (!$paymentsSellTypes) : ?>
+        <h3 class="text-center">
+            <?= Yii::t('app', 'Currently there is no Payment Methods available for selected currency') ?>
+        </h3>
+    <?php else: ?>
     <div class="currency-exchange-order-form">
 
         <?php ActiveForm::begin() ?>
@@ -52,4 +57,5 @@ $this->title = Yii::t('app', 'Update Currency Exchange Order Payment Sell Method
         </div>
         <?php ActiveForm::end() ?>
     </div>
+    <?php endif; ?>
 </div>
