@@ -17,7 +17,7 @@ use yii\helpers\Url;
                 <table class="table table-condensed table-hover" style="margin-bottom: 0;">
                     <tbody>
                     <tr>
-                        <th class="align-middle" scope="col">
+                        <th class="align-middle" scope="col" style="width: 50%">
                             <?= $model->getAttributeLabel('selling_currency_id') . '/' . $model->getAttributeLabel('buying_currency_id'); ?>
                         </th>
                         <td class="align-middle"><?= $model->sellingCurrency->code . '/' . $model->buyingCurrency->code; ?></td>
