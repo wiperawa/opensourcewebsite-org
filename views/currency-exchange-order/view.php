@@ -178,6 +178,15 @@ $this->params['breadcrumbs'][] = '#' . $model->id;
             </div>
         </div>
     </div>
+    <div class="row mb-2">
+        <div class="col-sm-6">
+            <h1 id="matched-orders" class="m-0 text-dark"><?= Yii::t('app','Offers')?>:</h1>
+        </div>
+    </div>
+
+    <?php foreach ($model->getMatches()->all() as $matchedOrder): ?>
+        <?= $this->render('_matched_order', ['model' => $matchedOrder])?>
+    <?php endforeach;?>
 
 <?php
 $url = Yii::$app->urlManager->createUrl(['currency-exchange-order/status?id=' . $model->id]);

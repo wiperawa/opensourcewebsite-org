@@ -92,7 +92,7 @@ $this->params['breadcrumbs'][] = $this->title;
                                 'label' => Yii::t('app', 'Offers'),
                                 'value' => function ($model) {
                                     return $model->getMatches()->count()?
-                                        Html::a($model->getMatches()->count(), Url::to(['view', 'id'=>$model->id])):
+                                        Html::a($model->getMatches()->count(), Url::to(['view', 'id'=>$model->id, '#' => 'matched-orders'])):
                                         '';
                                 },
                                 'format' => 'raw',

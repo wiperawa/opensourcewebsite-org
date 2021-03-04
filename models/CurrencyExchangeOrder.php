@@ -34,6 +34,7 @@ use yii\web\JsExpression;
  * @property int $buying_cash_on
  * @property int $cross_rate_on
  *
+ * @property User $user
  * @property CurrencyExchangeOrderBuyingPaymentMethod[] $currencyExchangeOrderBuyingPaymentMethods
  * @property CurrencyExchangeOrderMatch[] $currencyExchangeOrderMatches
  * @property CurrencyExchangeOrderMatch[] $currencyExchangeOrderMatches0
@@ -223,6 +224,10 @@ class CurrencyExchangeOrder extends ActiveRecord
         return ($this->location_lat && $this->location_lon) ? implode(',', [$this->location_lat, $this->location_lon]) : '';
     }
 
+    public function getUser(): ActiveQuery
+    {
+        return $this->hasOne(User::class, ['id' => 'user_id']);
+    }
 
     /**
      * Gets query for [[CurrencyExchangeOrderSellingPaymentMethods]].

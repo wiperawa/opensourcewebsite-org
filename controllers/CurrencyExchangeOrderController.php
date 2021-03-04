@@ -199,7 +199,7 @@ class CurrencyExchangeOrderController extends Controller
 
     public function actionViewOrderLocation(int $id): string
     {
-        return $this->renderAjax('map_modal', ['model' => $this->findModel($id)]);
+        return $this->renderAjax('map_modal', ['model' => $this->findModelForView($id)]);
     }
 
     /**
@@ -213,6 +213,21 @@ class CurrencyExchangeOrderController extends Controller
     {
         $model = CurrencyExchangeOrder::findOne($id);
         if ($model !== null && $model->user_id == Yii::$app->user->identity->id) {
+            return $model;
+        }
+
+        throw new NotFoundHttpException('The requested page does not exist.');
+    }
+
+    /**
+     * @param int $id
+     * @return CurrencyExchangeOrder
+     * @throws NotFoundHttpException
+     */
+    protected function findModelForView(int $id): CurrencyExchangeOrder
+    {
+        $model = CurrencyExchangeOrder::findOne($id);
+        if ($model !== null) {
             return $model;
         }
 
