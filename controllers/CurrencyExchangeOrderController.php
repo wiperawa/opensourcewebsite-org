@@ -197,6 +197,11 @@ class CurrencyExchangeOrderController extends Controller
         return $this->redirect(['index']);
     }
 
+    public function actionViewOrderLocation(int $id): string
+    {
+        return $this->renderAjax('map_modal', ['model' => $this->findModel($id)]);
+    }
+
     /**
      * Finds the CurrencyExchangeOrder model based on its primary key value.
      * If the model is not found, a 404 HTTP exception will be thrown.

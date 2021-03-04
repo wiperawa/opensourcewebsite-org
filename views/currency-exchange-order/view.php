@@ -3,6 +3,8 @@
 use \app\models\CurrencyExchangeOrder;
 use app\widgets\buttons\EditButton;
 use yii\helpers\ArrayHelper;
+use yii\helpers\Html;
+use yii\helpers\Url;
 
 /* @var $this yii\web\View */
 /* @var $model app\models\CurrencyExchangeOrder */
@@ -55,7 +57,6 @@ $this->params['breadcrumbs'][] = '#' . $model->id;
                         <div class="table-responsive">
                             <div id="w0" class="grid-view">
                                 <table class="table table-condensed table-hover" style="margin-bottom: 0;">
-                                    <caption>Currency exchange orders</caption>
                                     <tbody>
                                     <tr>
                                         <th class="align-middle"
@@ -95,7 +96,11 @@ $this->params['breadcrumbs'][] = '#' . $model->id;
                                     </tr>
                                     <tr>
                                         <th class="align-middle" scope="col"><?= Yii::t('app', 'Location'); ?></th>
-                                        <td class="align-middle"><?= $model->location_lat . ', ' . $model->location_lon; ?></td>
+                                        <td class="align-middle">
+                                            <?= ($model->selling_cash_on || $model->buying_cash_on) ?
+                                                Html::a('view', Url::to(['view-order-location', 'id' => $model->id]), ['class' => 'modal-btn-ajax']) : ''
+                                            ?>
+                                        </td>
                                         <td></td>
                                     </tr>
                                     </tbody>
@@ -111,9 +116,9 @@ $this->params['breadcrumbs'][] = '#' . $model->id;
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title"><?=Yii::t('app', 'Payment methods for Sell')?></h3>
+                    <h3 class="card-title"><?= Yii::t('app', 'Payment methods for Sell') ?></h3>
                     <div class="card-tools">
-                        <a class="edit-btn edit-btn-ajax"
+                        <a class="edit-btn modal-btn-ajax"
                            href="/currency-exchange-order/update-sell-methods/<?= $model->id ?>"
                            title="Edit" style="float: right">
                             <i class="fas fa-edit"></i>
@@ -125,13 +130,13 @@ $this->params['breadcrumbs'][] = '#' . $model->id;
                         <div id="w0" class="grid-view">
                             <table class="table table-condensed table-hover" style="margin-bottom: 0;">
                                 <tbody>
-                                    <?php foreach ($model->getSellingPaymentMethods()->all() as $method):?>
-                                        <tr>
-                                            <td>
-                                                <?=$method->name?>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach;?>
+                                <?php foreach ($model->getSellingPaymentMethods()->all() as $method): ?>
+                                    <tr>
+                                        <td>
+                                            <?= $method->name ?>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
                                 </tbody>
                             </table>
                         </div>
@@ -144,9 +149,9 @@ $this->params['breadcrumbs'][] = '#' . $model->id;
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title"><?=Yii::t('app', 'Payment methods for Buy')?></h3>
+                    <h3 class="card-title"><?= Yii::t('app', 'Payment methods for Buy') ?></h3>
                     <div class="card-tools">
-                        <a class="edit-btn edit-btn-ajax"
+                        <a class="edit-btn modal-btn-ajax"
                            href="/currency-exchange-order/update-buy-methods/<?= $model->id ?>"
                            title="Edit" style="float: right">
                             <i class="fas fa-edit"></i>
@@ -158,13 +163,13 @@ $this->params['breadcrumbs'][] = '#' . $model->id;
                         <div id="w0" class="grid-view">
                             <table class="table table-condensed table-hover" style="margin-bottom: 0;">
                                 <tbody>
-                                    <?php foreach ($model->getBuyingPaymentMethods()->all() as $method):?>
-                                        <tr>
-                                            <td>
-                                                <?=$method->name?>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach;?>
+                                <?php foreach ($model->getBuyingPaymentMethods()->all() as $method): ?>
+                                    <tr>
+                                        <td>
+                                            <?= $method->name ?>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
                                 </tbody>
                             </table>
                         </div>
@@ -178,11 +183,12 @@ $this->params['breadcrumbs'][] = '#' . $model->id;
 $url = Yii::$app->urlManager->createUrl(['currency-exchange-order/status?id=' . $model->id]);
 $script = <<<JS
 
-$('.edit-btn-ajax').on('click', function(e){
+$('.modal-btn-ajax').on('click', function(e){
     e.preventDefault();
     $('#main-modal').find('.modal-content').load($(this).attr('href'), function(){ $('#main-modal').modal('show') });
     return false;
 });
+
 
 $('.status-update').on("click", function(event) {
     var status = $(this).data('value');

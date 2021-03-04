@@ -163,7 +163,7 @@ $labelOptional = ' (' . Yii::t('app', 'optional') . ')';
                 <div class="modal-body">
                     <p>
                         <?php
-                        $center = new LatLng(['lat' => 51.508, 'lng' => -0.11]);
+                        $center = new LatLng(['lat' => $model->location_lat ?:51.508, 'lng' => $model->location_lon?:-0.11]);
 
                         $marker = new Marker([
                             'latLng' => $center,
