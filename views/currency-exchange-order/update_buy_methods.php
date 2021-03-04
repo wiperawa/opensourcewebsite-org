@@ -15,7 +15,6 @@ use app\widgets\buttons\SaveButton;
  */
 
 $this->title = Yii::t('app', 'Update Currency Exchange Order Payment Buy Methods ' . $model->id);
-
 ?>
 <div class="modal-header">
     <h4 class="modal-title"><?= $this->title ?></h4>

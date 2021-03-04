@@ -133,7 +133,9 @@ class CurrencyExchangeOrder extends ActiveRecord
                 'min' => 0,
                 'max' => 9999999999999.99999999,
             ],
-            [['updateSellingPaymentMethods', 'updateBuyingPaymentMethods'], 'each', 'rule' => ['integer']],
+            [['updateSellingPaymentMethods', 'updateBuyingPaymentMethods'], 'filter', 'filter' => function ($value) {
+                return array_map('intval', $value);
+            }],
             [
                 [
                     'selling_currency_min_amount',
@@ -300,6 +302,17 @@ class CurrencyExchangeOrder extends ActiveRecord
             $matchesQuery->andWhere("ST_Distance_Sphere(POINT($this->location_lon, $this->location_lat),
                 POINT($tblName.location_lon, $tblName.location_lat)) <= 1000 * ($tblName.delivery_radius + $this->delivery_radius)");
         }
+
+        $buyingMethodsIds = ArrayHelper::getColumn($this->getBuyingPaymentMethods()->asArray()->all(),'id');
+        $sellingMethodsIds = ArrayHelper::getColumn($this->getSellingPaymentMethods()->asArray()->all(),'id');
+
+        $matchesQuery
+            ->joinWith('sellingPaymentMethods sm')
+            ->where(['in', 'sm.id', $buyingMethodsIds]);
+
+        $matchesQuery
+            ->joinWith('buyingPaymentMethods bm')
+            ->where(['in', 'bm.id', $sellingMethodsIds]);
 
         foreach ($matchesQuery->all() as $matchedOrder) {
             $this->link('matches', $matchedOrder);
