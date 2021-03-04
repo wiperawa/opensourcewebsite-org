@@ -66,7 +66,7 @@ class CurrencyExchangeOrder extends ActiveRecord
     /**
      * {@inheritdoc}
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             [
@@ -130,9 +130,19 @@ class CurrencyExchangeOrder extends ActiveRecord
                 ],
                 'double',
                 'min' => 0,
-                'max' => 9999999999999.99,
+                'max' => 9999999999999.99999999,
             ],
             [['updateSellingPaymentMethods', 'updateBuyingPaymentMethods'], 'each', 'rule' => ['integer']],
+            [
+                [
+                    'selling_currency_min_amount',
+                    'selling_currency_max_amount',
+                ],
+                'filter', 'filter' => function ($value) {
+                     return  ($value != 0 ? $value : null);
+
+                },
+            ],
             [
                 [
                     'selling_currency_min_amount',
@@ -149,7 +159,7 @@ class CurrencyExchangeOrder extends ActiveRecord
                 'compare', 'when' => function ($model) {
                 return $model->selling_currency_min_amount != null;
             }, 'whenClient' => new JsExpression("function (attribute, value) {return $('#currencyexchangeorder-selling_currency_min_amount').val() != '' }"),
-                'compareAttribute' => 'selling_currency_min_amount', 'operator' => '>', 'type' => 'number'
+                'compareAttribute' => 'selling_currency_min_amount', 'operator' => '>=', 'type' => 'number'
             ]
         ];
     }
