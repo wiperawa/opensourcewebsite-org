@@ -25,14 +25,26 @@ use yii\helpers\Url;
                     </tr>
                     <tr>
                         <th class="align-middle"
-                            scope="col"><?= $model->getAttributeLabel('selling_rate') ?></th>
-                        <td class="align-middle"><?= round($model->getCurrentSellingRate(), 8) ?></td>
+                            scope="col"><?= $model->getAttributeLabel('selling_rate'); ?></th>
+                        <td class="align-middle">
+                            <?=
+                            !$model->cross_rate_on ?
+                                round($model->selling_rate, 8) :
+                                Yii::t('app', 'Cross Rate')
+                            ?>
+                        </td>
                         <td></td>
                     </tr>
                     <tr>
                         <th class="align-middle"
-                            scope="col"><?= $model->getAttributeLabel('buying_rate') ?></th>
-                        <td class="align-middle"><?= round($model->getCurrentBuyingRate(), 8) ?></td>
+                            scope="col"><?= $model->getAttributeLabel('buying_rate'); ?></th>
+                        <td class="align-middle">
+                            <?=
+                            !$model->cross_rate_on ?
+                                round($model->buying_rate, 8) :
+                                Yii::t('app', 'Cross Rate')
+                            ?>
+                        </td>
                         <td></td>
                     </tr>
                     <tr>

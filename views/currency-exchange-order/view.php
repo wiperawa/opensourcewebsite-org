@@ -67,13 +67,25 @@ $this->params['breadcrumbs'][] = '#' . $model->id;
                                     <tr>
                                         <th class="align-middle"
                                             scope="col"><?= $model->getAttributeLabel('selling_rate'); ?></th>
-                                        <td class="align-middle"><?= round($model->getCurrentSellingRate(), 8) ?></td>
+                                        <td class="align-middle">
+                                            <?=
+                                            !$model->cross_rate_on ?
+                                                round($model->selling_rate, 8) :
+                                                Yii::t('app', 'Cross Rate')
+                                            ?>
+                                        </td>
                                         <td></td>
                                     </tr>
                                     <tr>
                                         <th class="align-middle"
                                             scope="col"><?= $model->getAttributeLabel('buying_rate'); ?></th>
-                                        <td class="align-middle"><?= round($model->getCurrentBuyingRate(), 8) ?></td>
+                                        <td class="align-middle">
+                                            <?=
+                                            !$model->cross_rate_on ?
+                                                round($model->buying_rate, 8) :
+                                                Yii::t('app', 'Cross Rate')
+                                            ?>
+                                        </td>
                                         <td></td>
                                     </tr>
                                     <tr>
@@ -180,13 +192,13 @@ $this->params['breadcrumbs'][] = '#' . $model->id;
     </div>
     <div class="row mb-2">
         <div class="col-sm-6">
-            <h1 id="matched-orders" class="m-0 text-dark"><?= Yii::t('app','Offers')?>:</h1>
+            <h1 id="matched-orders" class="m-0 text-dark"><?= Yii::t('app', 'Offers') ?>:</h1>
         </div>
     </div>
 
-    <?php foreach ($model->getMatches()->all() as $matchedOrder): ?>
-        <?= $this->render('_matched_order', ['model' => $matchedOrder])?>
-    <?php endforeach;?>
+<?php foreach ($model->getMatchesOrderedByUserRating()->all() as $matchedOrder): ?>
+    <?= $this->render('_matched_order', ['model' => $matchedOrder]) ?>
+<?php endforeach; ?>
 
 <?php
 $url = Yii::$app->urlManager->createUrl(['currency-exchange-order/status?id=' . $model->id]);

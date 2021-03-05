@@ -133,9 +133,12 @@ class CurrencyExchangeOrder extends ActiveRecord
                 'min' => 0,
                 'max' => 9999999999999.99999999,
             ],
-            [['updateSellingPaymentMethods', 'updateBuyingPaymentMethods'], 'filter', 'filter' => function ($value) {
-                return array_map('intval', $value);
-            }],
+            [
+                ['updateSellingPaymentMethods', 'updateBuyingPaymentMethods'],
+                'filter', 'filter' => function ($value) {
+                    return array_map('intval', $value);
+                }
+            ],
             [
                 [
                     'selling_currency_min_amount',
@@ -271,6 +274,19 @@ class CurrencyExchangeOrder extends ActiveRecord
     }
 
     /**
+     * @return ActiveQuery
+     * @throws \yii\base\InvalidConfigException
+     */
+    public function getMatchesOrderedByUserRating(): ActiveQuery
+    {
+        return $this
+            ->getMatches()
+            ->joinWith('user u')
+            ->orderBy(['u.rating' => SORT_DESC])
+            ->addOrderBy(['user.created_at' => SORT_ASC]);;
+    }
+
+    /**
      * @return \yii\db\ActiveQuery
      * @throws \yii\base\InvalidConfigException
      */
@@ -312,8 +328,6 @@ class CurrencyExchangeOrder extends ActiveRecord
         $buyingMethodsIds = ArrayHelper::getColumn($this->getBuyingPaymentMethods()->asArray()->all(),'id');
         $sellingMethodsIds = ArrayHelper::getColumn($this->getSellingPaymentMethods()->asArray()->all(),'id');
 
-        var_dump($buyingMethodsIds, $sellingMethodsIds);
-        var_dump($this->id);
         $matchesQuery
             ->joinWith('sellingPaymentMethods sm')
             ->andWhere(['in', 'sm.id', $buyingMethodsIds]);
@@ -321,9 +335,6 @@ class CurrencyExchangeOrder extends ActiveRecord
         $matchesQuery
             ->joinWith('buyingPaymentMethods bm')
             ->andWhere(['in', 'bm.id', $sellingMethodsIds]);
-
-        var_dump($matchesQuery->createCommand()->getRawSql());
-        if ($buyingMethodsIds && $sellingMethodsIds)  die();
 
         foreach ($matchesQuery->all() as $matchedOrder) {
             $this->link('matches', $matchedOrder);
@@ -549,27 +560,6 @@ class CurrencyExchangeOrder extends ActiveRecord
     public function getBuyingCrossRate(): ?CurrencyRate
     {
         return CurrencyRate::find()->where(['from_currency_id' => $this->buying_currency_id, 'to_currency_id' => $this->selling_currency_id])->one();
-    }
-
-    public function getCurrentSellingRate(): float
-    {
-        if ($this->cross_rate_on) {
-            return $this->getSellingCrossRate() ?
-                $this->getSellingCrossRate()->rate :
-                ( $this->getBuyingCrossRate() ? (1 / $this->getBuyingCrossRate()->rate ) : 0) ;
-        }
-
-        return $this->selling_rate;
-    }
-
-    public function getCurrentBuyingRate(): float
-    {
-        if ($this->cross_rate_on) {
-            return $this->getBuyingCrossRate() ?
-                $this->getBuyingCrossRate()->rate :
-                ($this->getSellingCrossRate() ? (1 / $this->getSellingCrossRate()->rate) : 0);
-        }
-        return $this->buying_rate;
     }
 
     public function hasAmount(): bool
