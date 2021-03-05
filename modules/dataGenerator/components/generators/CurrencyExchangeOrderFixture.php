@@ -81,8 +81,8 @@ class CurrencyExchangeOrderFixture extends ARGenerator
                 static::getFaker()->valid(static function ($v) {
                     return (bool)$v;
                 })->randomFloat(1, 0.01, 10),
-            'selling_currency_min_amount' => static::getFaker()->randomNumber(2),
-            'selling_currency_max_amount' => static::getFaker()->randomNumber(4),
+            'selling_currency_min_amount' => $min_amount = static::getFaker()->randomNumber(2),
+            'selling_currency_max_amount' => $min_amount + static::getFaker()->randomNumber(2),
             'status' => CurrencyExchangeOrder::STATUS_ON,
             'delivery_radius' => static::getFaker()->numberBetween(1, 50),
             'location_lat' => $orderLat,

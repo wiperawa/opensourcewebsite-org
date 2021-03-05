@@ -39,7 +39,6 @@ abstract class ARGenerator extends Fixture
         $model = $this->factoryModel();
 
         if (!$model || !$model->save()) {
-
             throw new ARGeneratorException("Can't create ".static::classNameModel().", factoryModel returned null\r\n");
         }
 
