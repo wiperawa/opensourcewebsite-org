@@ -312,13 +312,18 @@ class CurrencyExchangeOrder extends ActiveRecord
         $buyingMethodsIds = ArrayHelper::getColumn($this->getBuyingPaymentMethods()->asArray()->all(),'id');
         $sellingMethodsIds = ArrayHelper::getColumn($this->getSellingPaymentMethods()->asArray()->all(),'id');
 
+        var_dump($buyingMethodsIds, $sellingMethodsIds);
+        var_dump($this->id);
         $matchesQuery
             ->joinWith('sellingPaymentMethods sm')
-            ->where(['in', 'sm.id', $buyingMethodsIds]);
+            ->andWhere(['in', 'sm.id', $buyingMethodsIds]);
 
         $matchesQuery
             ->joinWith('buyingPaymentMethods bm')
-            ->where(['in', 'bm.id', $sellingMethodsIds]);
+            ->andWhere(['in', 'bm.id', $sellingMethodsIds]);
+
+        var_dump($matchesQuery->createCommand()->getRawSql());
+        if ($buyingMethodsIds && $sellingMethodsIds)  die();
 
         foreach ($matchesQuery->all() as $matchedOrder) {
             $this->link('matches', $matchedOrder);
@@ -391,12 +396,12 @@ class CurrencyExchangeOrder extends ActiveRecord
 
     public function updateBuyingPaymentMethods()
     {
-        $newMethodsIds = array_map(fn($val) => intval($val), $this->updateBuyingPaymentMethods);
+        $newMethodsIds = array_map('intval', $this->updateBuyingPaymentMethods);
 
         $cashMethod = PaymentMethod::findOne(['type' => PaymentMethod::TYPE_CASH]);
 
         $currentMethodsIds = ArrayHelper::getColumn($this->getBuyingPaymentMethods()->asArray()->all(), 'id');
-        $currentMethodsIds = array_map(fn($val) => intval($val), $currentMethodsIds);
+        $currentMethodsIds = array_map('intval', $currentMethodsIds);
 
         $toDelete = $newMethodsIds ? array_values(array_diff($currentMethodsIds, $newMethodsIds)) : [];
         $toLink = $newMethodsIds ? array_values(array_diff($newMethodsIds, $currentMethodsIds)) : [];
@@ -422,12 +427,12 @@ class CurrencyExchangeOrder extends ActiveRecord
 
     public function updateSellingPaymentMethods()
     {
-        $newMethodsIds = array_map(fn($val) => intval($val), $this->updateSellingPaymentMethods);
+        $newMethodsIds = array_map('intval', $this->updateSellingPaymentMethods);
 
         $cashMethod = PaymentMethod::findOne(['type' => PaymentMethod::TYPE_CASH]);
 
         $currentMethodsIds = ArrayHelper::getColumn($this->getSellingPaymentMethods()->asArray()->all(), 'id');
-        $currentMethodsIds = array_map(fn($val) => intval($val), $currentMethodsIds);
+        $currentMethodsIds = array_map('intval', $currentMethodsIds);
 
         $toDelete = $newMethodsIds ? array_values(array_diff($currentMethodsIds, $newMethodsIds)) : [];
         $toLink = $newMethodsIds ? array_values(array_diff($newMethodsIds, $currentMethodsIds)) : [];
@@ -457,7 +462,6 @@ class CurrencyExchangeOrder extends ActiveRecord
     {
         $this->updateBuyingPaymentMethods();
         $this->updateSellingPaymentMethods();
-
 
         $clearMatches = false;
 

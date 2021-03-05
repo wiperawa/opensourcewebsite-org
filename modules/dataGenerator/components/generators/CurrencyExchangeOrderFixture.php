@@ -72,7 +72,6 @@ class CurrencyExchangeOrderFixture extends ARGenerator
             $buyPaymentMethodsIds[] = $cashPaymentMethodId;
         }
 
-
         return new CurrencyExchangeOrder([
             'selling_currency_id' => $currencies[0],
             'buying_currency_id' => $currencies[1],
@@ -105,12 +104,14 @@ class CurrencyExchangeOrderFixture extends ARGenerator
      */
     private function getPaymentMethodsIds(): array
     {
-        return  PaymentMethod::find()
-            ->where(['!=', 'type', PaymentMethod::TYPE_CASH])
-            ->select('id')
-            ->limit(8)
-            ->asArray()
-            ->all();
+        return ArrayHelper::getColumn(
+            PaymentMethod::find()
+                ->where(['!=', 'type', PaymentMethod::TYPE_CASH])
+                ->select('id')
+                ->limit(8)
+                ->asArray()
+                ->all(),
+            'id');
     }
 
     /**
