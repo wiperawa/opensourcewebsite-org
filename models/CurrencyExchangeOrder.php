@@ -283,7 +283,7 @@ class CurrencyExchangeOrder extends ActiveRecord
             ->getMatches()
             ->joinWith('user u')
             ->orderBy(['u.rating' => SORT_DESC])
-            ->addOrderBy(['user.created_at' => SORT_ASC]);;
+            ->addOrderBy(['u.created_at' => SORT_ASC]);;
     }
 
     /**

@@ -242,8 +242,6 @@ $('#crossRateCheckbox').on('change', function(){
         $('.sell-buy-rates-div').show();
     } else {
         $('.sell-buy-rates-div').hide();
-        $('#currencyexchangeorder-selling_rate').val('');
-        $('#currencyexchangeorder-buying_rate').val('');
     }
 });
 
