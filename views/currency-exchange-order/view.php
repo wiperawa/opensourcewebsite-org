@@ -100,21 +100,23 @@ $this->params['breadcrumbs'][] = '#' . $model->id;
                                         <td class="align-middle"><?= $model->getSellingCurrencyMaxAmount() ?></td>
                                         <td></td>
                                     </tr>
-                                    <tr>
-                                        <th class="align-middle"
-                                            scope="col"><?= $model->getAttributeLabel('delivery_radius'); ?></th>
-                                        <td class="align-middle"><?= $model->delivery_radius; ?></td>
-                                        <td></td>
-                                    </tr>
-                                    <tr>
-                                        <th class="align-middle" scope="col"><?= Yii::t('app', 'Location'); ?></th>
-                                        <td class="align-middle">
-                                            <?= ($model->selling_cash_on || $model->buying_cash_on) ?
-                                                Html::a('view', Url::to(['view-order-location', 'id' => $model->id]), ['class' => 'modal-btn-ajax']) : ''
-                                            ?>
-                                        </td>
-                                        <td></td>
-                                    </tr>
+                                    <?php if ($model->buying_cash_on || $model->selling_cash_on): ?>
+                                        <tr>
+                                            <th class="align-middle"
+                                                scope="col"><?= $model->getAttributeLabel('delivery_radius'); ?></th>
+                                            <td class="align-middle"><?= $model->delivery_radius; ?></td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <th class="align-middle" scope="col"><?= Yii::t('app', 'Location'); ?></th>
+                                            <td class="align-middle">
+                                                <?= ($model->selling_cash_on || $model->buying_cash_on) ?
+                                                    Html::a('view', Url::to(['view-order-location', 'id' => $model->id]), ['class' => 'modal-btn-ajax']) : ''
+                                                ?>
+                                            </td>
+                                            <td></td>
+                                        </tr>
+                                    <?php endif; ?>
                                     </tbody>
                                 </table>
                             </div>
