@@ -15,7 +15,20 @@ use yii\helpers\Url;
 $this->title = Yii::t('app', 'Currency Exchange Orders');
 $this->params['breadcrumbs'][] = $this->title;
 
-$ordersToDisplay = Yii::$app->request->get('status', (string)CurrencyExchangeOrder::STATUS_ON);
+
+$displayActiveOrders = (int)Yii::$app->request->get('status', CurrencyExchangeOrder::STATUS_ON) === CurrencyExchangeOrder::STATUS_ON;
+
+$offersCol = $displayActiveOrders  ?
+    [
+        'label' => Yii::t('app', 'Offers'),
+        'value' => function ($model) {
+            return  $model->getMatches()->count() ?
+                Html::a($model->getMatches()->count(), Url::to(['view', 'id' => $model->id, '#' => 'matched-orders'])) :
+                '';
+        },
+        'format' => 'raw',
+        'enableSorting' => false,
+    ]: [];
 ?>
 <div class="currency-exchange-order-index">
     <div class="row">
@@ -28,7 +41,7 @@ $ordersToDisplay = Yii::$app->request->get('status', (string)CurrencyExchangeOrd
                                 ['/currency-exchange-order', 'status' => CurrencyExchangeOrder::STATUS_ON],
                                 [
                                     'class' => 'nav-link show ' .
-                                        ($ordersToDisplay === (string)CurrencyExchangeOrder::STATUS_ON ? 'active' : '')
+                                        ($displayActiveOrders ? 'active' : '')
                                 ]);
                             ?>
                         </li>
@@ -37,7 +50,7 @@ $ordersToDisplay = Yii::$app->request->get('status', (string)CurrencyExchangeOrd
                                 ['/currency-exchange-order', 'status' => CurrencyExchangeOrder::STATUS_OFF],
                                 [
                                     'class' => 'nav-link show ' .
-                                        ($ordersToDisplay === (string)CurrencyExchangeOrder::STATUS_OFF ? 'active' : '')
+                                        (!$displayActiveOrders ? 'active' : '')
                                 ]);
                             ?>
                         </li>
@@ -99,16 +112,7 @@ $ordersToDisplay = Yii::$app->request->get('status', (string)CurrencyExchangeOrd
                                 },
                                 'enableSorting' => false,
                             ],
-                            [
-                                'label' => Yii::t('app', 'Offers'),
-                                'value' => function ($model) {
-                                    return $model->getMatches()->count() ?
-                                        Html::a($model->getMatches()->count(), Url::to(['view', 'id' => $model->id, '#' => 'matched-orders'])) :
-                                        '';
-                                },
-                                'format' => 'raw',
-                                'enableSorting' => false,
-                            ],
+                            $offersCol,
                             [
                                 'class' => ActionColumn::class,
                                 'template' => '{view}',
