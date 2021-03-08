@@ -60,21 +60,6 @@ use yii\helpers\Url;
                         <td></td>
                     </tr>
                     <tr>
-                        <th class="align-middle"
-                            scope="col"><?= $model->getAttributeLabel('delivery_radius') ?></th>
-                        <td class="align-middle"><?= $model->delivery_radius; ?></td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <th class="align-middle" scope="col"><?= Yii::t('app', 'Location') ?></th>
-                        <td class="align-middle">
-                            <?= ($model->selling_cash_on || $model->buying_cash_on) ?
-                                Html::a('view', Url::to(['view-order-location', 'id' => $model->id]), ['class' => 'modal-btn-ajax']) : ''
-                            ?>
-                        </td>
-                        <td></td>
-                    </tr>
-                    <tr>
                         <th class="align-middle" scope="col"><?= Yii::t('app', 'Selling Payment Methods') ?>:</th>
                         <td class="align-middle">
                             <?= implode(',', ArrayHelper::getColumn($model->getSellingPaymentMethods()->asArray()->all(), 'name')) ?>
@@ -106,7 +91,10 @@ use yii\helpers\Url;
                         <tr>
                             <th class="align-middle" scope="col"><?= Yii::t('app', 'Telegram') ?>:</th>
                             <td class="align-middle">
-                                <?= $model->user->botUser->getFullLink() ?>
+                                <?= Html::a($model->user->botUser->getFullName(),
+                                    'https://t.me/user?id=' . $model->user->botUser->provider_user_id,
+                                    ['target' => '_blank']
+                                ) ?>
                             </td>
                             <td></td>
                         </tr>
