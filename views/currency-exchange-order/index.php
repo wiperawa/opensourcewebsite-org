@@ -15,6 +15,7 @@ use yii\helpers\Url;
 $this->title = Yii::t('app', 'Currency Exchange Orders');
 $this->params['breadcrumbs'][] = $this->title;
 
+$ordersToDisplay = Yii::$app->request->get('status', (string)CurrencyExchangeOrder::STATUS_ON);
 ?>
 <div class="currency-exchange-order-index">
     <div class="row">
@@ -23,16 +24,22 @@ $this->params['breadcrumbs'][] = $this->title;
                 <div class="card-header d-flex p-0">
                     <ul class="nav nav-pills ml-auto p-2">
                         <li class="nav-item">
-                            <?= Html::a(Yii::t('app', 'Active'), ['/currency-exchange-order', 'status' => CurrencyExchangeOrder::STATUS_ON], [
-                                'class' => 'nav-link show ' .
-                                    (Yii::$app->request->get('status', (string) CurrencyExchangeOrder::STATUS_ON) === (string) CurrencyExchangeOrder::STATUS_ON ? 'active' : '')
-                            ]); ?>
+                            <?= Html::a(Yii::t('app', 'Active'),
+                                ['/currency-exchange-order', 'status' => CurrencyExchangeOrder::STATUS_ON],
+                                [
+                                    'class' => 'nav-link show ' .
+                                        ($ordersToDisplay === (string)CurrencyExchangeOrder::STATUS_ON ? 'active' : '')
+                                ]);
+                            ?>
                         </li>
                         <li class="nav-item">
-                            <?= Html::a(Yii::t('app', 'Inactive'), ['/currency-exchange-order', 'status' => CurrencyExchangeOrder::STATUS_OFF], [
-                                'class' => 'nav-link show ' .
-                                    (Yii::$app->request->get('status') === (string) CurrencyExchangeOrder::STATUS_OFF ? 'active' : '')
-                            ]); ?>
+                            <?= Html::a(Yii::t('app', 'Inactive'),
+                                ['/currency-exchange-order', 'status' => CurrencyExchangeOrder::STATUS_OFF],
+                                [
+                                    'class' => 'nav-link show ' .
+                                        ($ordersToDisplay === (string)CurrencyExchangeOrder::STATUS_OFF ? 'active' : '')
+                                ]);
+                            ?>
                         </li>
                         <li class="nav-item align-self-center mr-4">
                             <?= AddButton::widget([
@@ -63,14 +70,18 @@ $this->params['breadcrumbs'][] = $this->title;
                             [
                                 'attribute' => 'selling_rate',
                                 'value' => function ($model) {
-                                    return round($model->selling_rate, 2);
+                                    return !$model->cross_rate_on ?
+                                        round($model->selling_rate, 8) :
+                                        Yii::t('app', 'Cross Rate');
                                 },
                                 'enableSorting' => false,
                             ],
                             [
                                 'attribute' => 'buying_rate',
                                 'value' => function ($model) {
-                                    return round($model->buying_rate, 3);
+                                    return !$model->cross_rate_on ?
+                                        round($model->buying_rate, 8) :
+                                        Yii::t('app', 'Cross Rate');
                                 },
                                 'enableSorting' => false,
                             ],
@@ -91,8 +102,8 @@ $this->params['breadcrumbs'][] = $this->title;
                             [
                                 'label' => Yii::t('app', 'Offers'),
                                 'value' => function ($model) {
-                                    return $model->getMatches()->count()?
-                                        Html::a($model->getMatches()->count(), Url::to(['view', 'id'=>$model->id, '#' => 'matched-orders'])):
+                                    return $model->getMatches()->count() ?
+                                        Html::a($model->getMatches()->count(), Url::to(['view', 'id' => $model->id, '#' => 'matched-orders'])) :
                                         '';
                                 },
                                 'format' => 'raw',

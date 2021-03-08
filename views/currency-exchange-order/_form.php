@@ -278,7 +278,7 @@ $("#delete-currency-exchange-order").on("click", function(event) {
 
     if (confirm("{$jsMessages['delete-confirm']}")) {
         $.post(url, {}, function(result) {
-            if (result == "1") {
+            if (result === "1") {
                 location.href = "$urlRedirect";
             } else {
                 alert("{$jsMessages['delete-error']}");
