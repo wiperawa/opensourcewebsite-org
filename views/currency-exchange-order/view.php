@@ -28,18 +28,24 @@ $this->params['breadcrumbs'][] = '#' . $model->id;
                                            href="#" role="button"
                                            id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true"
                                            aria-expanded="false">
-                                            <?= $model->isActive() ? 'Active' : 'Inactive' ?>
+                                            <?= $model->isActive() ?
+                                                Yii::t('app', 'Active') :
+                                                Yii::t('app', 'Inactive') ?>
                                         </a>
                                         <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
                                             <h6 class="dropdown-header"><?= $model->getAttributeLabel('Status') ?></h6>
 
                                             <a class="dropdown-item status-update <?= $model->isActive() ? 'active' : '' ?>"
                                                href="#"
-                                               data-value="<?= CurrencyExchangeOrder::STATUS_ON ?>">Active</a>
+                                               data-value="<?= CurrencyExchangeOrder::STATUS_ON ?>">
+                                                <?= Yii::t('app', 'Active') ?>
+                                            </a>
 
                                             <a class="dropdown-item status-update <?= !$model->isActive() ? 'active' : '' ?>"
                                                href="#"
-                                               data-value="<?= CurrencyExchangeOrder::STATUS_OFF ?>">Inactive</a>
+                                               data-value="<?= CurrencyExchangeOrder::STATUS_OFF ?>">
+                                                <?= Yii::t('app', 'Inactive') ?>
+                                            </a>
                                         </div>
                                     </div>
                             </li>
@@ -60,8 +66,14 @@ $this->params['breadcrumbs'][] = '#' . $model->id;
                                     <tbody>
                                     <tr>
                                         <th class="align-middle"
-                                            scope="col"><?= $model->getAttributeLabel('selling_currency_id') . '/' . $model->getAttributeLabel('buying_currency_id'); ?></th>
-                                        <td class="align-middle"><?= $model->sellingCurrency->code . '/' . $model->buyingCurrency->code; ?></td>
+                                            scope="col">
+                                            <?= $model->getAttributeLabel('selling_currency_id') .
+                                            '/' .
+                                            $model->getAttributeLabel('buying_currency_id'); ?>
+                                        </th>
+                                        <td class="align-middle">
+                                            <?= $model->sellingCurrency->code . '/' . $model->buyingCurrency->code; ?>
+                                        </td>
                                         <td></td>
                                     </tr>
                                     <tr>
