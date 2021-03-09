@@ -126,11 +126,37 @@ $this->params['breadcrumbs'][] = '#' . $model->id;
             </div>
         </div>
     </div>
+
+<?php if ($offersCount = $model->getMatchesOrderedByUserRating()->count()): ?>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <div id="w0" class="grid-view">
+                            <table class="table table-condensed table-hover" style="margin-bottom: 0;">
+                                <tbody>
+                                <tr>
+                                    <th class="align-middle" scope="col"><?=Yii::t('app','Offers')?></th>
+                                    <td class="align-middle">
+                                        <?= Html::a($offersCount, Url::to(['view-offers', 'id' => $model->id])) ?>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<?php endif; ?>
+
     <div class="row">
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title"><?= Yii::t('app', 'Payment methods for Sell') ?></h3>
+                    <h3 class="card-title"><?= Yii::t('app', 'Payment methods to Sell') ?></h3>
                     <div class="card-tools">
                         <a class="edit-btn modal-btn-ajax"
                            href="/currency-exchange-order/update-sell-methods/<?= $model->id ?>"
@@ -163,7 +189,7 @@ $this->params['breadcrumbs'][] = '#' . $model->id;
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title"><?= Yii::t('app', 'Payment methods for Buy') ?></h3>
+                    <h3 class="card-title"><?= Yii::t('app', 'Payment methods to Buy') ?></h3>
                     <div class="card-tools">
                         <a class="edit-btn modal-btn-ajax"
                            href="/currency-exchange-order/update-buy-methods/<?= $model->id ?>"
@@ -192,26 +218,10 @@ $this->params['breadcrumbs'][] = '#' . $model->id;
             </div>
         </div>
     </div>
-    <div class="row mb-2">
-        <div class="col-sm-6">
-            <h1 id="matched-orders" class="m-0 text-dark"><?= Yii::t('app', 'Offers') ?>:</h1>
-        </div>
-    </div>
-
-<?php foreach ($model->getMatchesOrderedByUserRating()->all() as $matchedOrder): ?>
-    <?= $this->render('_matched_order', ['model' => $matchedOrder]) ?>
-<?php endforeach; ?>
 
 <?php
 $url = Yii::$app->urlManager->createUrl(['currency-exchange-order/status?id=' . $model->id]);
 $script = <<<JS
-
-$('.modal-btn-ajax').on('click', function(e){
-    e.preventDefault();
-    $('#main-modal').find('.modal-content').load($(this).attr('href'), function(){ $('#main-modal').modal('show') });
-    return false;
-});
-
 
 $('.status-update').on("click", function(event) {
     var status = $(this).data('value');

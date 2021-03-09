@@ -664,7 +664,19 @@ $leftMenuItems = [
                 }
             })
             .keyup();
-    })
+    });
+
+    $(document).on('click', '.modal-btn-ajax', function(e){
+        e.preventDefault();
+        $('#main-modal')
+            .find('.modal-content')
+            .empty()
+            .load($(this).attr('href'), function(){
+                $('#main-modal').modal('show')
+            });
+
+        return false;
+    });
 </script>
 </body>
 </html>

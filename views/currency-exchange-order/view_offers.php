@@ -10,60 +10,19 @@ use yii\helpers\Url;
 
 /* @var $this yii\web\View */
 /* @var $dataProvider yii\data\ActiveDataProvider */
-/* @var $view int */
+/* @var $model CurrencyExchangeOrder */
 
-$this->title = Yii::t('app', 'Currency Exchange Orders');
-$this->params['breadcrumbs'][] = $this->title;
+$this->title = Yii::t('app', 'Currency Exchange Order Offers');
+$this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'Currency exchange Orders'), 'url' => ['index']];
+$this->params['breadcrumbs'][] = ['label' => $model->id, 'url' => ['view', 'id' => $model->id]];
+$this->params['breadcrumbs'][] = Yii::t('app', 'Offers');
 
-
-$displayActiveOrders = (int)Yii::$app->request->get('status', CurrencyExchangeOrder::STATUS_ON) === CurrencyExchangeOrder::STATUS_ON;
-
-$offersCol = $displayActiveOrders  ?
-    [
-        'label' => Yii::t('app', 'Offers'),
-        'value' => function ($model) {
-            return  $model->getMatches()->exists() ?
-                Html::a($model->getMatches()->count(), Url::to(['view-offers', 'id' => $model->id])) :
-                '';
-        },
-        'format' => 'raw',
-        'enableSorting' => false,
-    ]: [];
 ?>
-<div class="currency-exchange-order-index">
+
+<div class="currency-exchange-order-view-offers">
     <div class="row">
         <div class="col-12">
             <div class="card">
-                <div class="card-header d-flex p-0">
-                    <ul class="nav nav-pills ml-auto p-2">
-                        <li class="nav-item">
-                            <?= Html::a(Yii::t('app', 'Active'),
-                                ['/currency-exchange-order', 'status' => CurrencyExchangeOrder::STATUS_ON],
-                                [
-                                    'class' => 'nav-link show ' .
-                                        ($displayActiveOrders ? 'active' : '')
-                                ]);
-                            ?>
-                        </li>
-                        <li class="nav-item">
-                            <?= Html::a(Yii::t('app', 'Inactive'),
-                                ['/currency-exchange-order', 'status' => CurrencyExchangeOrder::STATUS_OFF],
-                                [
-                                    'class' => 'nav-link show ' .
-                                        (!$displayActiveOrders ? 'active' : '')
-                                ]);
-                            ?>
-                        </li>
-                        <li class="nav-item align-self-center mr-4">
-                            <?= AddButton::widget([
-                                'url' => ['currency-exchange-order/create'],
-                                'options' => [
-                                    'title' => 'New Order',
-                                ]
-                            ]); ?>
-                        </li>
-                    </ul>
-                </div>
                 <div class="card-body p-0">
                     <?= GridView::widget([
                         'dataProvider' => $dataProvider,
@@ -112,14 +71,19 @@ $offersCol = $displayActiveOrders  ?
                                 },
                                 'enableSorting' => false,
                             ],
-                            $offersCol,
+
                             [
                                 'class' => ActionColumn::class,
                                 'template' => '{view}',
                                 'buttons' => [
-                                    'view' => function ($url) {
+                                    'view' => function ($url,$offer_order) use ($model) {
+
                                         $icon = Html::tag('span', '', ['class' => 'fa fa-eye', 'data-toggle' => 'tooltip', 'title' => 'view']);
-                                        return Html::a($icon, $url, ['class' => 'btn btn-outline-primary',]);
+                                        return Html::a(
+                                            $icon,
+                                            Url::to(['view-offer', 'order_id' => $model->id, 'match_order_id' => $offer_order->id]),
+                                            ['class' => 'btn btn-outline-primary modal-btn-ajax',]
+                                        );
                                     },
                                 ],
                             ],
