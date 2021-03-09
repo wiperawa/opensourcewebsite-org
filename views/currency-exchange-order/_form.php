@@ -266,10 +266,8 @@ var position = {
     'lng': {$center->lng}
 }
 
-var location = $('#currency-exchange-order-location');
-
 $('#location-save-changes').on('click', function(e) {
-    location.val(position.lat + ", " + position.lng);
+    $('#currency-exchange-order-location').val(position.lat + ", " + position.lng).trigger('change');
 })
 
 $("#delete-currency-exchange-order").on("click", function(event) {
@@ -279,7 +277,7 @@ $("#delete-currency-exchange-order").on("click", function(event) {
     if (confirm("{$jsMessages['delete-confirm']}")) {
         $.post(url, {}, function(result) {
             if (result === "1") {
-                location.href = "$urlRedirect";
+                document.location.href = "$urlRedirect";
             } else {
                 alert("{$jsMessages['delete-error']}");
             }

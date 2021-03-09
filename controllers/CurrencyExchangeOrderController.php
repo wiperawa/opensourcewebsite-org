@@ -3,6 +3,7 @@
 namespace app\controllers;
 
 use app\models\Currency;
+use app\models\CurrencyExchangeOrderMatch;
 use app\repositories\PaymentMethodRepository;
 use app\services\CurrencyExchangeOrderService;
 use Faker\Provider\Payment;
@@ -10,6 +11,7 @@ use Yii;
 use app\models\CurrencyExchangeOrder;
 use app\models\CurrencyExchangeOrderPaymentMethod;
 use yii\data\ActiveDataProvider;
+use yii\debug\models\timeline\DataProvider;
 use yii\filters\AccessControl;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
@@ -199,7 +201,37 @@ class CurrencyExchangeOrderController extends Controller
 
     public function actionViewOrderLocation(int $id): string
     {
-        return $this->renderAjax('map_modal', ['model' => $this->findModelForView($id)]);
+        return $this->renderAjax('map_modal', ['model' => $this->findModel($id)]);
+    }
+
+
+    public function actionViewOffers(int $id): string
+    {
+        $model = $this->findModel($id);
+        if ( $model->getMatchesOrderedByUserRating()->exists() ) {
+            $dataProvider = new ActiveDataProvider([
+               'query' => $model->getMatchesOrderedByUserRating(),
+            ]);
+            $dataProvider->pagination->pageSize=15;
+
+            return $this->render('view_offers', ['dataProvider' => $dataProvider, 'model' => $model]);
+        }
+        throw new NotFoundHttpException('Currently no matched Offers found.');
+    }
+
+    public function actionViewOffer(int $order_id, int $match_order_id): string
+    {
+
+        /** @var CurrencyExchangeOrderMatch $matchModel */
+        $matchModel = CurrencyExchangeOrderMatch::find()
+            ->where(['order_id' => $order_id, 'match_order_id' => $match_order_id])
+            ->one();
+
+        if ($matchModel) {
+            return $this->renderAjax('view_offer', ['model' => $matchModel->matchOrder]);
+        }
+
+        throw new NotFoundHttpException('No offer found with current orders combination!');
     }
 
     /**
@@ -219,18 +251,4 @@ class CurrencyExchangeOrderController extends Controller
         throw new NotFoundHttpException('The requested page does not exist.');
     }
 
-    /**
-     * @param int $id
-     * @return CurrencyExchangeOrder
-     * @throws NotFoundHttpException
-     */
-    protected function findModelForView(int $id): CurrencyExchangeOrder
-    {
-        $model = CurrencyExchangeOrder::findOne($id);
-        if ($model !== null) {
-            return $model;
-        }
-
-        throw new NotFoundHttpException('The requested page does not exist.');
-    }
 }
