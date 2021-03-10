@@ -136,7 +136,7 @@ class CurrencyExchangeOrder extends ActiveRecord
             [
                 ['updateSellingPaymentMethods', 'updateBuyingPaymentMethods'],
                 'filter', 'filter' => function ($value) {
-                    return array_map('intval', $value);
+                    return is_array($value) ? array_map('intval', $value): [];
                 }
             ],
             [

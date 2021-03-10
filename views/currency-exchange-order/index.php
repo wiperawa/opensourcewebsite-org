@@ -23,7 +23,7 @@ $offersCol = $displayActiveOrders  ?
         'label' => Yii::t('app', 'Offers'),
         'value' => function ($model) {
             return  $model->getMatches()->exists() ?
-                Html::a($model->getMatches()->count(), Url::to(['view-offers', 'id' => $model->id]), ['target' => '_blank']) :
+                Html::a($model->getMatches()->count(), Url::to(['view-offers', 'id' => $model->id])) :
                 '';
         },
         'format' => 'raw',

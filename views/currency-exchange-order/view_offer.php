@@ -14,13 +14,13 @@ $this->title = Yii::t('app', 'Offer');
 $this->params['breadcrumbs'][] = ['label' => Yii::t('app', 'Currency exchange Orders'), 'url' => ['index']];
 $this->params['breadcrumbs'][] = ['label' => $orderModel->id, 'url' => ['view', 'id' => $orderModel->id]];
 $this->params['breadcrumbs'][] = Yii::t('app', 'Offers');
-$this->params['breadcrumbs'][] = ['label' => $matchOrderModel->id, 'url' => ['view-offer', 'order_id' => $orderModel->id,'match_order_id' => $matchOrderModel->id]];
+$this->params['breadcrumbs'][] = ['label' => $matchOrderModel->id, 'url' => ['view-offer', 'order_id' => $orderModel->id, 'match_order_id' => $matchOrderModel->id]];
 
 ?>
 <div class="row">
     <div class="col-12">
         <div class="card">
-            <div class="card-body">
+            <div class="card-body p-0">
                 <div class="table-responsive">
                     <div id="w0" class="grid-view">
                         <table class="table table-condensed table-hover" style="margin-bottom: 0;">
@@ -30,7 +30,7 @@ $this->params['breadcrumbs'][] = ['label' => $matchOrderModel->id, 'url' => ['vi
                                     <?= $matchOrderModel->getAttributeLabel('id') ?>
                                 </th>
                                 <td class="align-middle">
-                                    <?=$matchOrderModel->id?>
+                                    <?= $matchOrderModel->id ?>
                                 </td>
                                 <td></td>
                             </tr>
@@ -108,39 +108,52 @@ $this->params['breadcrumbs'][] = ['label' => $matchOrderModel->id, 'url' => ['vi
                         </table>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="table-responsive">
-                            <table class="table table-condensed table-hover">
-                                <tr>
-                                    <th>Payment Methods to Sell</th>
-                                </tr>
-                                <?php foreach ($matchOrderModel->getSellingPaymentMethods()->asArray()->all() as $method): ?>
-                                    <tr>
-                                        <td><?= $method['name'] ?></td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </table>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="table-responsive">
-                            <table class="table table-condensed table-hover">
-                                <tr>
-                                    <th>Payment Methods to Buy</th>
-                                </tr>
-                                <?php foreach ($matchOrderModel->getBuyingPaymentMethods()->asArray()->all() as $method): ?>
-                                    <tr>
-                                        <td><?= $method['name'] ?></td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </table>
-                        </div>
-                    </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Payment methods to Sell</h3>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-condensed table-hover" style="margin-bottom: 0;">
+                        <tbody>
+                        <?php foreach ($matchOrderModel->getSellingPaymentMethods()->asArray()->all() as $method): ?>
+                            <tr>
+                                <td><?= $method['name'] ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
+</div>
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Payment methods to Buy</h3>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-condensed table-hover">
+                        <?php foreach ($matchOrderModel->getBuyingPaymentMethods()->asArray()->all() as $method): ?>
+                            <tr>
+                                <td><?= $method['name'] ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 </div>
 
 

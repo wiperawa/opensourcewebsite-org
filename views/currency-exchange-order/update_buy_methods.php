@@ -34,8 +34,10 @@ $this->title = Yii::t('app', 'Update Currency Exchange Order Payment Buy Methods
                 <div class="col-12">
 
                     <label class="control-label"><?= Yii::t('app', 'Payment methods for Buy'); ?></label>
+                    <input type="hidden" name="CurrencyExchangeOrder[updateBuyingPaymentMethods]" value="">
+
                     <?= Select2::widget([
-                        'name' => 'CurrencyExchangeOrder[updateBuyingPaymentMethods]',
+                        'name' => 'CurrencyExchangeOrder[updateBuyingPaymentMethods][]',
                         'theme' => Select2::THEME_DEFAULT,
                         'data' => ArrayHelper::map($paymentsBuyTypes, 'id', 'name'),
                         'value' => ArrayHelper::getColumn($model->getBuyingPaymentMethods()->all(), 'id'),

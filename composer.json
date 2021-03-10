@@ -32,7 +32,7 @@
         "ext-intl": "*",
         "ext-curl": "*",
         "ext-iconv": "*",
-        "yiisoft/yii2": "~2.0.38",
+        "yiisoft/yii2": "~2.0",
         "yiisoft/yii2-swiftmailer": "^2.0",
         "almasaeed2010/adminlte": "^3.0",
         "cebe/yii2-gravatar": "^1.1",
@@ -49,7 +49,7 @@
         "yiisoft/yii2-bootstrap4": "^2.0",
         "yii2tech/ar-position": "^1.0",
         "voskobovich/yii2-linker-behavior": "^4.1",
-        "2amigos/yii2-leaflet-extension": "~1.0"
+        "2amigos/yii2-leaflet-extension": "^1.1"
     },
     "require-dev": {
         "yiisoft/yii2-debug": "^2.0",

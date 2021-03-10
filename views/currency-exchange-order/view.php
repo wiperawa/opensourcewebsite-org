@@ -160,7 +160,7 @@ $this->params['breadcrumbs'][] = '#' . $model->id;
                                 <tr>
                                     <th class="align-middle" scope="col"><?=Yii::t('app','Offers')?></th>
                                     <td class="align-middle">
-                                        <?= Html::a($offersCount, Url::to(['view-offers', 'id' => $model->id]), ['target' => '_blank']) ?>
+                                        <?= Html::a($offersCount, Url::to(['view-offers', 'id' => $model->id])) ?>
                                     </td>
                                 </tr>
                                 </tbody>

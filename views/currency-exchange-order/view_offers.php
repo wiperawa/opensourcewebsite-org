@@ -83,7 +83,7 @@ $this->params['breadcrumbs'][] = Yii::t('app', 'Offers');
                                         return Html::a(
                                             $icon,
                                             Url::to(['view-offer', 'order_id' => $model->id, 'match_order_id' => $offer_order->id]),
-                                            ['class' => 'btn btn-outline-primary', 'target' => '_blank']
+                                            ['class' => 'btn btn-outline-primary']
                                         );
                                     },
                                 ],
