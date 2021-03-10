@@ -53,9 +53,6 @@ class CurrencyExchangeOrder extends ActiveRecord
     public const CASH_OFF = 0;
     public const CASH_ON = 1;
 
-    public $updateBuyingPaymentMethods = [];
-    public $updateSellingPaymentMethods = [];
-
     /**
      * {@inheritdoc}
      */
@@ -132,12 +129,6 @@ class CurrencyExchangeOrder extends ActiveRecord
                 'double',
                 'min' => 0,
                 'max' => 9999999999999.99999999,
-            ],
-            [
-                ['updateSellingPaymentMethods', 'updateBuyingPaymentMethods'],
-                'filter', 'filter' => function ($value) {
-                    return is_array($value) ? array_map('intval', $value): [];
-                }
             ],
             [
                 [
@@ -407,92 +398,12 @@ class CurrencyExchangeOrder extends ActiveRecord
     }
 
     /**
-     * Update payment methods to buy linked to model
-     * @return bool is payment methods was updated or stays the same
-     * @throws \yii\base\InvalidConfigException
-     */
-    public function updateBuyingPaymentMethods(): bool
-    {
-        $newMethodsIds = array_map('intval', $this->updateBuyingPaymentMethods);
-
-        $cashMethod = PaymentMethod::findOne(['type' => PaymentMethod::TYPE_CASH]);
-
-        $currentMethodsIds = ArrayHelper::getColumn($this->getBuyingPaymentMethods()->asArray()->all(), 'id');
-        $currentMethodsIds = array_map('intval', $currentMethodsIds);
-
-        $toDelete = $newMethodsIds ? array_values(array_diff($currentMethodsIds, $newMethodsIds)) : [];
-        $toLink = $newMethodsIds ? array_values(array_diff($newMethodsIds, $currentMethodsIds)) : [];
-
-        if ($this->buying_cash_on) {
-            $toDelete = array_diff($toDelete, [$cashMethod->id]);
-            if (!in_array($cashMethod->id, $currentMethodsIds)) {
-                $toLink[] = $cashMethod->id;
-            }
-        } else {
-            if (in_array($cashMethod->id, $currentMethodsIds)) {
-                $toDelete[] = $cashMethod->id;
-            }
-        }
-
-        if ($toDelete) {
-            CurrencyExchangeOrderBuyingPaymentMethod::deleteAll(['AND', ['order_id' => $this->id], ['in', 'payment_method_id', $toDelete]]);
-        }
-
-        foreach ($toLink as $id) {
-            $this->link('buyingPaymentMethods', PaymentMethod::findOne($id));
-        }
-
-        return ((bool)$toDelete || (bool)$toLink);
-    }
-
-    /**
-     * Update model payment methods to sell linked to model
-     * @return bool is payment methods was updated or stays the same
-     * @throws \yii\base\InvalidConfigException
-     */
-    public function updateSellingPaymentMethods(): bool
-    {
-        $newMethodsIds = array_map('intval', $this->updateSellingPaymentMethods);
-
-        $cashMethod = PaymentMethod::findOne(['type' => PaymentMethod::TYPE_CASH]);
-
-        $currentMethodsIds = ArrayHelper::getColumn($this->getSellingPaymentMethods()->asArray()->all(), 'id');
-        $currentMethodsIds = array_map('intval', $currentMethodsIds);
-
-        $toDelete = $newMethodsIds ? array_values(array_diff($currentMethodsIds, $newMethodsIds)) : [];
-        $toLink = $newMethodsIds ? array_values(array_diff($newMethodsIds, $currentMethodsIds)) : [];
-
-        if ($this->selling_cash_on) {
-            $toDelete = array_diff($toDelete, [$cashMethod->id]);
-            if (!in_array($cashMethod->id, $currentMethodsIds)) {
-                $toLink[] = $cashMethod->id;
-            }
-        } else {
-            if (in_array($cashMethod->id, $currentMethodsIds)) {
-                $toDelete[] = $cashMethod->id;
-            }
-        }
-
-        if ($toDelete) {
-            CurrencyExchangeOrderSellingPaymentMethod::deleteAll(['AND', ['order_id' => $this->id], ['in', 'payment_method_id', $toDelete]]);
-        }
-        foreach ($toLink as $id) {
-            $this->link('sellingPaymentMethods', PaymentMethod::findOne($id));
-        }
-
-        return ((bool)$toDelete || (bool)$toLink);
-    }
-
-    /**
      * {@inheritdoc}
      */
     public function afterSave($insert, $changedAttributes)
     {
 
-        $isBuyUpdated =  $this->updateBuyingPaymentMethods();
-        $isSellUpdated = $this->updateSellingPaymentMethods();
-
-        $clearMatches = $isBuyUpdated || $isSellUpdated;
+        $clearMatches = false;
 
         if (isset($changedAttributes['status'])) {
             if ($this->status == self::STATUS_OFF) {

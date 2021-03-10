@@ -1,6 +1,6 @@
 <?php
 
-use app\models\CurrencyExchangeOrder;
+use app\models\FormModels\CurrencyExchange\OrderPaymentMethods;
 use yii\widgets\ActiveForm;
 use yii\web\View;
 use kartik\select2\Select2;
@@ -10,11 +10,11 @@ use app\widgets\buttons\SaveButton;
 
 /**
  * @var $this View
- * @var $model CurrencyExchangeOrder
+ * @var $model OrderPaymentMethods
  * @var $paymentsSellTypes array
  */
 
-$this->title = Yii::t('app', 'Update Currency Exchange Order Payment Sell Methods ' . $model->id);
+$this->title = Yii::t('app', 'Update Currency Exchange Order Payment Sell Methods');
 
 ?>
 <div class="modal-header">
@@ -33,25 +33,23 @@ $this->title = Yii::t('app', 'Update Currency Exchange Order Payment Sell Method
         <?php $form = ActiveForm::begin() ?>
         <div class="row">
             <div class="col-12">
-                <label class="control-label"><?= Yii::t('app', 'Payment methods for Sell'); ?></label>
-                <input type="hidden" name="CurrencyExchangeOrder[updateSellingPaymentMethods]" value="">
-                <?= Select2::widget([
-                    'name' => 'CurrencyExchangeOrder[updateSellingPaymentMethods][]',
+
+                <?= $form->field($model, 'sellingPaymentMethods')->widget(Select2::class, [
                     'theme' => Select2::THEME_DEFAULT,
                     'data' => ArrayHelper::map($paymentsSellTypes, 'id', 'name'),
-                    'value' => ArrayHelper::getColumn($model->getSellingPaymentMethods()->all(), 'id'),
                     'options' => [
-                        'placeholder' => 'Select a payment...',
+                        'placeholder' => Yii::t('app','Select Payment Method...'),
                         'multiple' => true,
                     ],
                     'pluginOptions' => [
                         'allowClear' => true,
                         'closeOnSelect' => false,
                     ],
-                ]); ?>
+                ]) ?>
+
                 <div class="modal-footer">
                     <?= SaveButton::widget(); ?>
-                    <?= CancelButton::widget(['url' => ['view', 'id' => $model->id]]); ?>
+                    <?= CancelButton::widget(['url' => ['view', 'id' => $model->getOrder()->id]]); ?>
                 </div>
 
             </div>

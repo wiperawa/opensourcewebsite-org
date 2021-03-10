@@ -4,6 +4,7 @@ namespace app\controllers;
 
 use app\models\Currency;
 use app\models\CurrencyExchangeOrderMatch;
+use app\models\FormModels\CurrencyExchange\OrderPaymentMethods;
 use app\repositories\PaymentMethodRepository;
 use app\services\CurrencyExchangeOrderService;
 use Faker\Provider\Payment;
@@ -96,7 +97,7 @@ class CurrencyExchangeOrderController extends Controller
         $model->user_id = Yii::$app->user->identity->id;
 
         if ($model->load(($post = Yii::$app->request->post())) && $model->save()) {
-
+            (new OrderPaymentMethods(['order' => $model]))->updatePaymentMethods();
             return $this->redirect(['view', 'id' => $model->id]);
         }
 
@@ -118,6 +119,7 @@ class CurrencyExchangeOrderController extends Controller
         $model = $this->findModel($id);
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
+            (new OrderPaymentMethods(['order' => $model]))->updatePaymentMethods();
             return $this->redirect(['view', 'id' => $model->id]);
         }
 
@@ -132,12 +134,15 @@ class CurrencyExchangeOrderController extends Controller
     {
         $model = $this->findModel($id);
 
-        if ($model->load(Yii::$app->request->post()) && $model->save() ) {
+        $formModel = new OrderPaymentMethods(['order' => $model]);
+
+        if ($formModel->load(Yii::$app->request->post()) && $formModel->validate()) {
+            $formModel->updateSellingPaymentMethods();
             return $this->redirect(['view', 'id' => $model->id]);
         }
 
         return $this->renderAjax('update_sell_methods', [
-            'model' => $model,
+            'model' => $formModel,
             'paymentsSellTypes' => $this->getPaymentMethodsForCurrency($model->selling_currency_id)
         ]);
     }
@@ -146,12 +151,15 @@ class CurrencyExchangeOrderController extends Controller
     {
         $model = $this->findModel($id);
 
-        if ($model->load(Yii::$app->request->post()) && $model->save() ) {
+        $formModel = new OrderPaymentMethods(['order' => $model]);
+
+        if ($formModel->load(Yii::$app->request->post()) && $formModel->validate()) {
+            $formModel->updateBuyingPaymentMethods();
             return $this->redirect(['view', 'id' => $model->id]);
         }
 
         return $this->renderAjax('update_buy_methods', [
-            'model' => $model,
+            'model' => $formModel,
             'paymentsBuyTypes' => $this->getPaymentMethodsForCurrency($model->buying_currency_id),
         ]);
     }
@@ -203,7 +211,6 @@ class CurrencyExchangeOrderController extends Controller
     {
         return $this->renderAjax('map_modal', ['model' => $this->findModel($id)]);
     }
-
 
     public function actionViewOffers(int $id): string
     {
