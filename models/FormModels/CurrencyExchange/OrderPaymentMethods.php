@@ -45,9 +45,10 @@ class OrderPaymentMethods extends Model {
 
     /**
      * Update CurrencyExchangeOrder model payment methods to buy
+     * @return bool
      * @throws \yii\base\InvalidConfigException
      */
-    public function updateBuyingPaymentMethods()
+    public function updateBuyingPaymentMethods(): bool
     {
         $newMethodsIds = $this->buyingPaymentMethods;
 
@@ -77,13 +78,15 @@ class OrderPaymentMethods extends Model {
         foreach ($toLink as $id) {
             $order->link('buyingPaymentMethods', PaymentMethod::findOne($id));
         }
+        return (!!$toDelete || !!$toLink);
     }
 
     /**
      * Update CurrencyExchangeOrder model payment methods to sell
+     * @return bool
      * @throws \yii\base\InvalidConfigException
      */
-    public function updateSellingPaymentMethods()
+    public function updateSellingPaymentMethods(): bool
     {
         $newMethodsIds = $this->sellingPaymentMethods;
 
@@ -112,12 +115,20 @@ class OrderPaymentMethods extends Model {
         foreach ($toLink as $id) {
             $order->link('sellingPaymentMethods', PaymentMethod::findOne($id));
         }
+        return (!!$toDelete || !!$toLink);
+
     }
 
+    /**
+     * Update Payment Methods for [[CurrencyExchangeOrder]]
+     * if either buying or selling payment methods updated, it clear matched offers for this [[CurrencyExchangeOrder]] model
+     * @throws \yii\base\InvalidConfigException
+     */
     public function updatePaymentMethods()
     {
-        $this->updateBuyingPaymentMethods();
-        $this->updateSellingPaymentMethods();
+        if ($this->updateBuyingPaymentMethods() || $this->updateSellingPaymentMethods()){
+            $this->_order->clearMatches();
+        }
     }
 
     /**

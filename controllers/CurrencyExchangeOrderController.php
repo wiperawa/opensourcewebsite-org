@@ -137,7 +137,7 @@ class CurrencyExchangeOrderController extends Controller
         $formModel = new OrderPaymentMethods(['order' => $model]);
 
         if ($formModel->load(Yii::$app->request->post()) && $formModel->validate()) {
-            $formModel->updateSellingPaymentMethods();
+            $formModel->updatePaymentMethods();
             return $this->redirect(['view', 'id' => $model->id]);
         }
 
@@ -154,7 +154,7 @@ class CurrencyExchangeOrderController extends Controller
         $formModel = new OrderPaymentMethods(['order' => $model]);
 
         if ($formModel->load(Yii::$app->request->post()) && $formModel->validate()) {
-            $formModel->updateBuyingPaymentMethods();
+            $formModel->updatePaymentMethods();
             return $this->redirect(['view', 'id' => $model->id]);
         }
 
