@@ -256,6 +256,7 @@ class CurrencyExchangeOrder extends ActiveRecord
      * Gets query for [[CurrencyExchangeOrderBuyingPaymentMethods]].
      *
      * @return \yii\db\ActiveQuery
+     * @throws \yii\base\InvalidConfigException
      */
     public function getBuyingPaymentMethods(): ActiveQuery
     {
@@ -405,7 +406,12 @@ class CurrencyExchangeOrder extends ActiveRecord
         }
     }
 
-    public function updateBuyingPaymentMethods()
+    /**
+     * Update payment methods to buy linked to model
+     * @return bool is payment methods was updated or stays the same
+     * @throws \yii\base\InvalidConfigException
+     */
+    public function updateBuyingPaymentMethods(): bool
     {
         $newMethodsIds = array_map('intval', $this->updateBuyingPaymentMethods);
 
@@ -423,7 +429,9 @@ class CurrencyExchangeOrder extends ActiveRecord
                 $toLink[] = $cashMethod->id;
             }
         } else {
-            $toDelete[] = $cashMethod->id;
+            if (in_array($cashMethod->id, $currentMethodsIds)) {
+                $toDelete[] = $cashMethod->id;
+            }
         }
 
         if ($toDelete) {
@@ -434,9 +442,15 @@ class CurrencyExchangeOrder extends ActiveRecord
             $this->link('buyingPaymentMethods', PaymentMethod::findOne($id));
         }
 
+        return ((bool)$toDelete || (bool)$toLink);
     }
 
-    public function updateSellingPaymentMethods()
+    /**
+     * Update model payment methods to sell linked to model
+     * @return bool is payment methods was updated or stays the same
+     * @throws \yii\base\InvalidConfigException
+     */
+    public function updateSellingPaymentMethods(): bool
     {
         $newMethodsIds = array_map('intval', $this->updateSellingPaymentMethods);
 
@@ -454,7 +468,9 @@ class CurrencyExchangeOrder extends ActiveRecord
                 $toLink[] = $cashMethod->id;
             }
         } else {
-            $toDelete[] = $cashMethod->id;
+            if (in_array($cashMethod->id, $currentMethodsIds)) {
+                $toDelete[] = $cashMethod->id;
+            }
         }
 
         if ($toDelete) {
@@ -464,6 +480,7 @@ class CurrencyExchangeOrder extends ActiveRecord
             $this->link('sellingPaymentMethods', PaymentMethod::findOne($id));
         }
 
+        return ((bool)$toDelete || (bool)$toLink);
     }
 
     /**
@@ -471,10 +488,11 @@ class CurrencyExchangeOrder extends ActiveRecord
      */
     public function afterSave($insert, $changedAttributes)
     {
-        $this->updateBuyingPaymentMethods();
-        $this->updateSellingPaymentMethods();
 
-        $clearMatches = false;
+        $isBuyUpdated =  $this->updateBuyingPaymentMethods();
+        $isSellUpdated = $this->updateSellingPaymentMethods();
+
+        $clearMatches = $isBuyUpdated || $isSellUpdated;
 
         if (isset($changedAttributes['status'])) {
             if ($this->status == self::STATUS_OFF) {
