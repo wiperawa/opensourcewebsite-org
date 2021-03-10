@@ -23,7 +23,7 @@ $offersCol = $displayActiveOrders  ?
         'label' => Yii::t('app', 'Offers'),
         'value' => function ($model) {
             return  $model->getMatches()->exists() ?
-                Html::a($model->getMatches()->count(), Url::to(['view-offers', 'id' => $model->id])) :
+                Html::a($model->getMatches()->count(), Url::to(['view-offers', 'id' => $model->id]), ['target' => '_blank']) :
                 '';
         },
         'format' => 'raw',
@@ -70,6 +70,7 @@ $offersCol = $displayActiveOrders  ?
                         'summary' => false,
                         'tableOptions' => ['class' => 'table table-hover'],
                         'columns' => [
+                            'id',
                             [
                                 'label' => Yii::t('app', 'Sell') . '/' . Yii::t('app', 'Buy'),
                                 'value' => function ($model) {

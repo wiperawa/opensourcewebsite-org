@@ -228,7 +228,7 @@ class CurrencyExchangeOrderController extends Controller
             ->one();
 
         if ($matchModel) {
-            return $this->renderAjax('view_offer', ['model' => $matchModel->matchOrder]);
+            return $this->render('view_offer', ['orderModel' => $matchModel->order, 'matchOrderModel' => $matchModel->matchOrder]);
         }
 
         throw new NotFoundHttpException('No offer found with current orders combination!');

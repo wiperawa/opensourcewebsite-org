@@ -29,6 +29,7 @@ $this->params['breadcrumbs'][] = Yii::t('app', 'Offers');
                         'summary' => false,
                         'tableOptions' => ['class' => 'table table-hover'],
                         'columns' => [
+                            'id',
                             [
                                 'label' => Yii::t('app', 'Sell') . '/' . Yii::t('app', 'Buy'),
                                 'value' => function ($model) {
@@ -82,7 +83,7 @@ $this->params['breadcrumbs'][] = Yii::t('app', 'Offers');
                                         return Html::a(
                                             $icon,
                                             Url::to(['view-offer', 'order_id' => $model->id, 'match_order_id' => $offer_order->id]),
-                                            ['class' => 'btn btn-outline-primary modal-btn-ajax',]
+                                            ['class' => 'btn btn-outline-primary', 'target' => '_blank']
                                         );
                                     },
                                 ],

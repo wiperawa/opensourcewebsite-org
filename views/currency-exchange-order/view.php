@@ -65,6 +65,15 @@ $this->params['breadcrumbs'][] = '#' . $model->id;
                                 <table class="table table-condensed table-hover" style="margin-bottom: 0;">
                                     <tbody>
                                     <tr>
+                                        <th class="align-middle" scope="col" style="width: 50%;">
+                                            <?= $model->getAttributeLabel('id') ?>
+                                        </th>
+                                        <td class="align-middle">
+                                            <?=$model->id?>
+                                        </td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
                                         <th class="align-middle"
                                             scope="col">
                                             <?= $model->getAttributeLabel('selling_currency_id') .
@@ -151,7 +160,7 @@ $this->params['breadcrumbs'][] = '#' . $model->id;
                                 <tr>
                                     <th class="align-middle" scope="col"><?=Yii::t('app','Offers')?></th>
                                     <td class="align-middle">
-                                        <?= Html::a($offersCount, Url::to(['view-offers', 'id' => $model->id])) ?>
+                                        <?= Html::a($offersCount, Url::to(['view-offers', 'id' => $model->id]), ['target' => '_blank']) ?>
                                     </td>
                                 </tr>
                                 </tbody>
