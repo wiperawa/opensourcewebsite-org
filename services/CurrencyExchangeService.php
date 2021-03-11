@@ -18,19 +18,11 @@ class CurrencyExchangeService
      */
     public function updatePaymentMethods(CurrencyExchangeOrder $order, array $sellPaymentMethods, array $buyPaymentMethods): void
     {
-        if ($this->updateSellingPaymentMethods($order, $sellPaymentMethods) || $this->updateBuyingPaymentMethods($order, $buyPaymentMethods)) {
+        if ($this->updateSellingPaymentMethods($order, $sellPaymentMethods) ||
+            $this->updateBuyingPaymentMethods($order, $buyPaymentMethods))
+        {
             $order->clearMatches();
         }
-    }
-
-    /**
-     * Meant to be called after each [[CurrencyExchangeOrder]] model create/update.
-     * Update payment methods in order is cash method on or off.
-     * @param CurrencyExchangeOrder $order
-     */
-    public function handleOrderUpdate(CurrencyExchangeOrder $order)
-    {
-        $this->updatePaymentMethods($order, $order->getCurrentSellingPaymentMethodsIds(), $order->getCurrentBuyingPaymentMethodsIds());
     }
 
     /**
@@ -44,8 +36,7 @@ class CurrencyExchangeService
 
         [$toDelete, $toLink] = $this->getToDeleteAndToLinkIds(
             $order->getCurrentBuyingPaymentMethodsIds(),
-            $newMethodsIds,
-            (bool)$order->buying_cash_on
+            $newMethodsIds
         );
 
         if ($toDelete) {
@@ -69,8 +60,7 @@ class CurrencyExchangeService
 
         [$toDelete, $toLink] = $this->getToDeleteAndToLinkIds(
             $order->getCurrentSellingPaymentMethodsIds(),
-            $newMethodsIds,
-            (bool)$order->selling_cash_on
+            $newMethodsIds
         );
 
         if ($toDelete) {
@@ -83,23 +73,11 @@ class CurrencyExchangeService
 
     }
 
-    private function getToDeleteAndToLinkIds(array $currentMethodsIds, array $newMethodsIds, bool $cashIsOn): array
+    private function getToDeleteAndToLinkIds(array $currentMethodsIds, array $newMethodsIds): array
     {
         $toDelete = array_values(array_diff($currentMethodsIds, $newMethodsIds));
         $toLink = array_values(array_diff($newMethodsIds, $currentMethodsIds));
 
-        if ($cashMethod = PaymentMethod::findOne(['type' => PaymentMethod::TYPE_CASH])) {
-            if ($cashIsOn) {
-                $toDelete = array_diff($toDelete, [$cashMethod->id]);
-                if (!in_array($cashMethod->id, $currentMethodsIds)) {
-                    $toLink[] = $cashMethod->id;
-                }
-            } else {
-                if (in_array($cashMethod->id, $currentMethodsIds)) {
-                    $toDelete[] = $cashMethod->id;
-                }
-            }
-        }
         return [$toDelete, $toLink];
     }
 

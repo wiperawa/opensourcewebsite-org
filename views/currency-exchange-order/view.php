@@ -191,6 +191,11 @@ $this->params['breadcrumbs'][] = '#' . $model->id;
                         <div id="w0" class="grid-view">
                             <table class="table table-condensed table-hover" style="margin-bottom: 0;">
                                 <tbody>
+                                <?php if ($model->selling_cash_on): ?>
+                                    <tr>
+                                        <td><?=Yii::t('app','Cash')?></td>
+                                    </tr>
+                                <?php endif; ?>
                                 <?php foreach ($model->getSellingPaymentMethods()->all() as $method): ?>
                                     <tr>
                                         <td>
@@ -224,6 +229,11 @@ $this->params['breadcrumbs'][] = '#' . $model->id;
                         <div id="w0" class="grid-view">
                             <table class="table table-condensed table-hover" style="margin-bottom: 0;">
                                 <tbody>
+                                <?php if ($model->buying_cash_on): ?>
+                                    <tr>
+                                        <td><?=Yii::t('app','Cash')?></td>
+                                    </tr>
+                                <?php endif; ?>
                                 <?php foreach ($model->getBuyingPaymentMethods()->all() as $method): ?>
                                     <tr>
                                         <td>

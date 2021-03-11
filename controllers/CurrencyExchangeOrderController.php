@@ -99,7 +99,6 @@ class CurrencyExchangeOrderController extends Controller
         $model->user_id = Yii::$app->user->identity->id;
 
         if ($model->load(($post = Yii::$app->request->post())) && $model->save()) {
-            $this->service->handleOrderUpdate($model);
             return $this->redirect(['view', 'id' => $model->id]);
         }
 
@@ -121,7 +120,6 @@ class CurrencyExchangeOrderController extends Controller
         $model = $this->findModel($id);
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            $this->service->handleOrderUpdate($model);
             return $this->redirect(['view', 'id' => $model->id]);
         }
 
@@ -170,7 +168,6 @@ class CurrencyExchangeOrderController extends Controller
     {
         return PaymentMethod::find()->joinWith('currencies')
             ->where(['currency.id' => $currency_id])
-            ->andWhere(['!=', 'payment_method.type', PaymentMethod::TYPE_CASH])
             ->all();
     }
 

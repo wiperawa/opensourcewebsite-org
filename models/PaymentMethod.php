@@ -15,12 +15,10 @@ class PaymentMethod extends ActiveRecord
 {
     const TYPE_EMONEY = 0;
     const TYPE_BANK = 1;
-    const TYPE_CASH = 2;
 
     public static array $types = [
         self::TYPE_EMONEY => 'E-Money',
         self::TYPE_BANK => 'Bank',
-        self::TYPE_CASH => 'Cash',
     ];
 
     /**
