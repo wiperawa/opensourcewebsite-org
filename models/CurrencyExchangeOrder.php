@@ -481,12 +481,12 @@ class CurrencyExchangeOrder extends ActiveRecord
         }
     }
 
-    public function getSellingCrossRate(): ?CurrencyRate
+    public function getSellingCrossRate()
     {
         return CurrencyRate::find()->where(['from_currency_id' => $this->selling_currency_id, 'to_currency_id' => $this->buying_currency_id])->one();
     }
 
-    public function getBuyingCrossRate(): ?CurrencyRate
+    public function getBuyingCrossRate()
     {
         return CurrencyRate::find()->where(['from_currency_id' => $this->buying_currency_id, 'to_currency_id' => $this->selling_currency_id])->one();
     }
@@ -498,5 +498,21 @@ class CurrencyExchangeOrder extends ActiveRecord
         }
 
         return false;
+    }
+
+    public function getCurrentSellingPaymentMethodsIds(): array
+    {
+        return array_map(
+            'intval',
+            ArrayHelper::getColumn($this->getSellingPaymentMethods()->asArray()->all(), 'id')
+        );
+    }
+
+    public function getCurrentBuyingPaymentMethodsIds(): array
+    {
+        return  array_map(
+            'intval',
+            ArrayHelper::getColumn($this->getBuyingPaymentMethods()->asArray()->all(), 'id')
+        );
     }
 }

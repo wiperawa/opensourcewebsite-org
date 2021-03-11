@@ -2,22 +2,17 @@
 
 namespace app\controllers;
 
+use Yii;
 use app\models\Currency;
 use app\models\CurrencyExchangeOrderMatch;
 use app\models\FormModels\CurrencyExchange\OrderPaymentMethods;
-use app\repositories\PaymentMethodRepository;
-use app\services\CurrencyExchangeOrderService;
-use Faker\Provider\Payment;
-use Yii;
+use app\services\CurrencyExchangeService;
 use app\models\CurrencyExchangeOrder;
-use app\models\CurrencyExchangeOrderPaymentMethod;
 use yii\data\ActiveDataProvider;
-use yii\debug\models\timeline\DataProvider;
 use yii\filters\AccessControl;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
-use \app\components\helpers\ArrayHelper;
 use \app\models\PaymentMethod;
 
 /**
@@ -25,6 +20,8 @@ use \app\models\PaymentMethod;
  */
 class CurrencyExchangeOrderController extends Controller
 {
+
+    protected CurrencyExchangeService $service;
 
     /**
      * {@inheritdoc}
@@ -48,6 +45,13 @@ class CurrencyExchangeOrderController extends Controller
                 ],
             ],
         ];
+    }
+
+    public function __construct($id, $module, $config = [])
+    {
+        parent::__construct($id, $module, $config);
+
+        $this->service = new CurrencyExchangeService();
     }
 
     /**
@@ -79,8 +83,6 @@ class CurrencyExchangeOrderController extends Controller
     {
         $order = $this->findModel($id);
 
-
-
         return $this->render('view', [
             'model' => $order,
         ]);
@@ -97,7 +99,7 @@ class CurrencyExchangeOrderController extends Controller
         $model->user_id = Yii::$app->user->identity->id;
 
         if ($model->load(($post = Yii::$app->request->post())) && $model->save()) {
-            (new OrderPaymentMethods(['order' => $model]))->updatePaymentMethods();
+            $this->service->handleOrderUpdate($model);
             return $this->redirect(['view', 'id' => $model->id]);
         }
 
@@ -119,7 +121,7 @@ class CurrencyExchangeOrderController extends Controller
         $model = $this->findModel($id);
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            (new OrderPaymentMethods(['order' => $model]))->updatePaymentMethods();
+            $this->service->handleOrderUpdate($model);
             return $this->redirect(['view', 'id' => $model->id]);
         }
 
@@ -137,7 +139,7 @@ class CurrencyExchangeOrderController extends Controller
         $formModel = new OrderPaymentMethods(['order' => $model]);
 
         if ($formModel->load(Yii::$app->request->post()) && $formModel->validate()) {
-            $formModel->updatePaymentMethods();
+            $this->service->updateSellingPaymentMethods($model, $formModel->sellingPaymentMethods);
             return $this->redirect(['view', 'id' => $model->id]);
         }
 
@@ -154,7 +156,7 @@ class CurrencyExchangeOrderController extends Controller
         $formModel = new OrderPaymentMethods(['order' => $model]);
 
         if ($formModel->load(Yii::$app->request->post()) && $formModel->validate()) {
-            $formModel->updatePaymentMethods();
+            $this->service->updateBuyingPaymentMethods($model, $formModel->buyingPaymentMethods);
             return $this->redirect(['view', 'id' => $model->id]);
         }
 
