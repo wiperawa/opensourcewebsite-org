@@ -7,6 +7,7 @@ use app\models\Currency;
 use app\models\CurrencyExchangeOrder;
 use app\models\PaymentMethod;
 use app\models\User;
+use app\services\CurrencyExchangeService;
 use Yii;
 use yii\base\Event;
 use yii\db\ActiveRecord;
@@ -15,6 +16,15 @@ use yii\helpers\Console;
 
 class CurrencyExchangeOrderFixture extends ARGenerator
 {
+
+    private CurrencyExchangeService $service;
+
+    public function __construct($config = [])
+    {
+        parent::__construct($config);
+        $this->service = new CurrencyExchangeService();
+    }
+
     /**
      * @throws ARGeneratorException
      */
@@ -30,9 +40,10 @@ class CurrencyExchangeOrderFixture extends ARGenerator
     {
         $user = $this->findUser();
 
-        $currencies = $this->getRandCurrenciesPair();
+        [$sellCurrencyId, $buyCurrencyId] = $this->getRandCurrenciesPair();
 
-        if (!$user || !$currencies) {
+
+        if (!$user || !$sellCurrencyId || !$buyCurrencyId) {
             return null;
         }
 
@@ -45,10 +56,10 @@ class CurrencyExchangeOrderFixture extends ARGenerator
         $sellingCashOn = (int)static::getFaker()->boolean();
         $buyingCashOn = (int)static::getFaker()->boolean();
 
-        $cashPaymentMethodId = $this->getCashPaymentMethodId();
-        $paymentMethodsIds = $this->getPaymentMethodsIds();
+        $sellPaymentMethodsIds = $this->getPaymentMethodsIds($sellCurrencyId);
+        $buyPaymentMethodsIds = $this->getPaymentMethodsIds($buyCurrencyId);
 
-        if (!$cashPaymentMethodId || !$paymentMethodsIds) {
+        if (!$sellPaymentMethodsIds || !$buyPaymentMethodsIds) {
             $class = self::classNameModel();
             $message = "\n$class: creation skipped. There is no Cash Payment method or no Payment Methods at all, yet.\n";
             $message .= "It's not error - few iterations later new ExchangeOrder will be generated.\n";
@@ -56,25 +67,18 @@ class CurrencyExchangeOrderFixture extends ARGenerator
             return null;
         }
 
-        $sellPaymentMethodsIds = static::getFaker()->randomElements(
-            $paymentMethodsIds,
-            static::getFaker()->numberBetween(1, count($paymentMethodsIds))
+        $orderSellPaymentMethodsIds = static::getFaker()->randomElements(
+            $sellPaymentMethodsIds,
+            static::getFaker()->numberBetween(1, count($sellPaymentMethodsIds))
         );
-        if ($sellingCashOn) {
-            $sellPaymentMethodsIds[] = $cashPaymentMethodId;
-        }
-
-        $buyPaymentMethodsIds = static::getFaker()->randomElements(
-            $paymentMethodsIds,
-            static::getFaker()->numberBetween(1, count($paymentMethodsIds))
+        $orderBuyPaymentMethodsIds = static::getFaker()->randomElements(
+            $buyPaymentMethodsIds,
+            static::getFaker()->numberBetween(1, count($buyPaymentMethodsIds))
         );
-        if ($buyingCashOn) {
-            $buyPaymentMethodsIds[] = $cashPaymentMethodId;
-        }
 
-        return new CurrencyExchangeOrder([
-            'selling_currency_id' => $currencies[0],
-            'buying_currency_id' => $currencies[1],
+        $model = new CurrencyExchangeOrder([
+            'selling_currency_id' => $sellCurrencyId,
+            'buying_currency_id' => $buyCurrencyId,
             'user_id' => $user->id,
             'selling_rate' => $crossRateOn ? null :
                 static::getFaker()->valid(static function ($v) {
@@ -89,33 +93,46 @@ class CurrencyExchangeOrderFixture extends ARGenerator
             'selling_cash_on' => $sellingCashOn,
             'buying_cash_on' => $buyingCashOn,
             'cross_rate_on' => $crossRateOn,
-            'updateBuyingPaymentMethods' => $buyPaymentMethodsIds,
-            'updateSellingPaymentMethods' => $sellPaymentMethodsIds,
         ]);
-    }
 
-    private function getCashPaymentMethodId(): string
-    {
-        return PaymentMethod::find()->where(['type' => PaymentMethod::TYPE_CASH])->select('id')->scalar();
+        if (!$model->save()) {
+            throw new ARGeneratorException("Can't save " . static::classNameModel() . "!\r\n");
+        }
+
+        $this->service->updatePaymentMethods($model, $orderSellPaymentMethodsIds, $orderBuyPaymentMethodsIds);
+
+        return $model;
     }
 
     /**
+     * @throws ARGeneratorException
+     */
+    public function load(): ActiveRecord
+    {
+        return $this->factoryModel();
+    }
+
+
+    /**
+     * @param int $currencyId
      * @return int[] array
      */
-    private function getPaymentMethodsIds(): array
+    private function getPaymentMethodsIds(int $currencyId): array
     {
-        return ArrayHelper::getColumn(
-            PaymentMethod::find()
-                ->where(['!=', 'type', PaymentMethod::TYPE_CASH])
-                ->select('id')
-                ->limit(8)
-                ->asArray()
-                ->all(),
-            'id');
+        return array_map('intval',
+            ArrayHelper::getColumn(
+                PaymentMethod::find()->joinWith('currencies c')
+                    ->where(['c.id' => $currencyId])
+                    ->select('{{%payment_method}}.id')
+                    ->limit(8)
+                    ->asArray()
+                    ->all(),
+                'id')
+        );
     }
 
     /**
-     * @return Currency[]
+     * @return int[]
      */
     private function getRandCurrenciesPair(): array
     {

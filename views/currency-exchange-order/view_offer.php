@@ -149,7 +149,7 @@ $this->params['breadcrumbs'][] = ['label' => $matchOrderModel->id, 'url' => ['vi
                 <div class="table-responsive">
                     <table class="table table-condensed table-hover">
                         <tbody>
-                        <?php if ($model->selling_cash_on): ?>
+                        <?php if ($matchOrderModel->selling_cash_on): ?>
                             <tr>
                                 <td><?= Yii::t('app', 'Cash') ?></td>
                             </tr>

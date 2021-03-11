@@ -16,13 +16,38 @@ class CurrencyExchangeService
      * @param array $sellPaymentMethods
      * @param array $buyPaymentMethods
      */
-    public function updatePaymentMethods(CurrencyExchangeOrder $order, array $sellPaymentMethods, array $buyPaymentMethods): void
+    public function updatePaymentMethods(CurrencyExchangeOrder $order, array $sellPaymentMethods = [], array $buyPaymentMethods = []): void
     {
-        if ($this->updateSellingPaymentMethods($order, $sellPaymentMethods) ||
-            $this->updateBuyingPaymentMethods($order, $buyPaymentMethods))
-        {
+
+        $sellUpdated = $sellPaymentMethods ? $this->updateSellingPaymentMethods($order, $sellPaymentMethods): false;
+        $buyUpdated = $buyPaymentMethods ? $this->updateBuyingPaymentMethods($order, $buyPaymentMethods): false;
+
+        if ($sellUpdated || $buyUpdated) {
             $order->clearMatches();
         }
+    }
+
+    /**
+     * Update CurrencyExchangeOrder model payment methods to sell
+     * @param CurrencyExchangeOrder $order
+     * @param array $newMethodsIds
+     * @return bool
+     */
+    public function updateSellingPaymentMethods(CurrencyExchangeOrder $order, array $newMethodsIds): bool
+    {
+
+        [$toDelete, $toLink] = $this->getToDeleteAndToLinkIds(
+            $order->getCurrentSellingPaymentMethodsIds(),
+            $newMethodsIds
+        );
+        if ($toDelete) {
+            CurrencyExchangeOrderSellingPaymentMethod::deleteAll(['AND', ['order_id' => $order->id], ['in', 'payment_method_id', $toDelete]]);
+        }
+        foreach ($toLink as $id) {
+            $order->link('sellingPaymentMethods', PaymentMethod::findOne($id));
+        }
+        return (!!$toDelete || !!$toLink);
+
     }
 
     /**
@@ -47,30 +72,6 @@ class CurrencyExchangeService
             $order->link('buyingPaymentMethods', PaymentMethod::findOne($id));
         }
         return (!!$toDelete || !!$toLink);
-    }
-
-    /**
-     * Update CurrencyExchangeOrder model payment methods to sell
-     * @param CurrencyExchangeOrder $order
-     * @param array $newMethodsIds
-     * @return bool
-     */
-    public function updateSellingPaymentMethods(CurrencyExchangeOrder $order, array $newMethodsIds): bool
-    {
-
-        [$toDelete, $toLink] = $this->getToDeleteAndToLinkIds(
-            $order->getCurrentSellingPaymentMethodsIds(),
-            $newMethodsIds
-        );
-
-        if ($toDelete) {
-            CurrencyExchangeOrderSellingPaymentMethod::deleteAll(['AND', ['order_id' => $order->id], ['in', 'payment_method_id', $toDelete]]);
-        }
-        foreach ($toLink as $id) {
-            $order->link('sellingPaymentMethods', PaymentMethod::findOne($id));
-        }
-        return (!!$toDelete || !!$toLink);
-
     }
 
     private function getToDeleteAndToLinkIds(array $currentMethodsIds, array $newMethodsIds): array
