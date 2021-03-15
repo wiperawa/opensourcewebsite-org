@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6cb8ad379bc739f5772a9f2349fb8b79",
+    "content-hash": "6a2e878dc0d7a75d981cbdef372a9dfb",
     "packages": [
         {
             "name": "2amigos/yii2-leaflet-extension",
@@ -131,7 +131,7 @@
             "version": "3.5.1",
             "source": {
                 "type": "git",
-                "url": "git@github.com:jquery/jquery-dist.git",
+                "url": "https://github.com/jquery/jquery-dist.git",
                 "reference": "4c0e4becb8263bb5b3e6dadc448d8e7305ef8215"
             },
             "dist": {
@@ -1096,6 +1096,18 @@
             "dist": {
                 "type": "tar",
                 "url": "https://registry.npmjs.org/bootstrap/-/bootstrap-4.6.0.tgz"
+            },
+            "type": "npm-asset",
+            "license": [
+                "MIT"
+            ]
+        },
+        {
+            "name": "npm-asset/leaflet.locatecontrol",
+            "version": "0.72.2",
+            "dist": {
+                "type": "tar",
+                "url": "https://registry.npmjs.org/leaflet.locatecontrol/-/leaflet.locatecontrol-0.72.2.tgz"
             },
             "type": "npm-asset",
             "license": [
