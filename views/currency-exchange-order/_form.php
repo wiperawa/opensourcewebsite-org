@@ -74,11 +74,9 @@ $labelOptional = ' (' . Yii::t('app', 'optional') . ')';
                             </div>
                             <div class="row">
                                 <div class="col">
-                                    <div class="form-group field-buying_rate">
-                                        <label class="control-label" for="buying_rate"><?=$model->getAttributeLabel('buying_rate')?></label>
-                                        <input type="text" id="buying_rate" class="form-control" name="buying_rate" value="<?=$model->buying_rate?>">
-                                        <div class="help-block"></div>
-                                    </div>
+                                    <?= $form->field($model, 'buying_rate')
+                                        ->textInput(['maxlength' => true, 'id' => 'buying_rate'])
+                                        ->label($model->getAttributeLabel('buying_rate')); ?>
                                 </div>
                             </div>
                         </div>
@@ -248,7 +246,7 @@ $('#crossRateCheckbox').on('change', function(){
 
 const calculateCrossRate = (rate) => {
     const curVal = parseFloat(rate);
-    if (!isNaN(curVal)) {
+    if (!isNaN(curVal) && curVal != 0) {
         return (1/curVal).toFixed(8);
     }
     return '';
