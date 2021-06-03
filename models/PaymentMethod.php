@@ -2,6 +2,8 @@
 
 namespace app\models;
 
+use app\models\queries\PaymentMethodQuery;
+use app\models\queries\traits\RandomTrait;
 use yii\db\ActiveRecord;
 
 /**
@@ -13,6 +15,7 @@ use yii\db\ActiveRecord;
  */
 class PaymentMethod extends ActiveRecord
 {
+
     const TYPE_EMONEY = 0;
     const TYPE_BANK = 1;
 
@@ -27,6 +30,11 @@ class PaymentMethod extends ActiveRecord
     public static function tableName(): string
     {
         return 'payment_method';
+    }
+
+    public static function find()
+    {
+        return new PaymentMethodQuery(get_called_class());
     }
 
     /**

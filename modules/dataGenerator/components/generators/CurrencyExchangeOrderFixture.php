@@ -38,13 +38,10 @@ class CurrencyExchangeOrderFixture extends ARGenerator
 
     protected function factoryModel(): ?ActiveRecord
     {
+
         $user = $this->findUser();
 
         [$sellCurrencyId, $buyCurrencyId] = $this->getRandCurrenciesPair();
-
-        if (!$user || !$sellCurrencyId || !$buyCurrencyId) {
-            return null;
-        }
 
         $londonCenter = [51.509865, -0.118092];
         [$orderSellingLat, $orderSellingLon] = LatLonHelper::generateRandomPoint($londonCenter, 100);
@@ -126,21 +123,21 @@ class CurrencyExchangeOrderFixture extends ARGenerator
      */
     private function getPaymentMethodsIds(int $currencyId): array
     {
+        $paymentMethods = PaymentMethod::find()->joinWith('currencies c')
+            ->where(['c.id' => $currencyId])
+            ->select('{{%payment_method}}.id')
+            ->orderByRandAlt(8)
+            ->asArray()
+            ->all();
+
         return array_map('intval',
-            ArrayHelper::getColumn(
-                PaymentMethod::find()->joinWith('currencies c')
-                    ->where(['c.id' => $currencyId])
-                    ->select('{{%payment_method}}.id')
-                    ->limit(8)
-                    ->asArray()
-                    ->all(),
-                'id'
-            )
+            ArrayHelper::getColumn($paymentMethods, 'id')
         );
     }
 
     /**
-     * @return int[]
+     * @return array<int>
+     * @throws ARGeneratorException
      */
     private function getRandCurrenciesPair(): array
     {
@@ -156,8 +153,7 @@ class CurrencyExchangeOrderFixture extends ARGenerator
             $message = "\n$class: creation skipped. There is no Currencies yet.\n";
             $message .= "It's not error - few iterations later new ExchangeOrder will be generated.\n";
             Yii::$app->controller->stdout($message, Console::BG_GREY);
-
-            return [];
+            throw new ARGeneratorException('Impossible to create Exchange Order - Co currencies!');
         }
 
         return [$currenciesPairIds[0]['id'], $currenciesPairIds[1]['id']];
@@ -165,6 +161,7 @@ class CurrencyExchangeOrderFixture extends ARGenerator
 
     private function findUser(): ?User
     {
+        /** @var User $user */
         $user = User::find()
             ->orderByRandAlt(1)
             ->one();
@@ -174,6 +171,7 @@ class CurrencyExchangeOrderFixture extends ARGenerator
             $message = "\n$class: creation skipped. There is no Users\n";
             $message .= "It's not error - few iterations later new ExchangeOrder will be generated.\n";
             Yii::$app->controller->stdout($message, Console::BG_GREY);
+            throw new ARGeneratorException('Impossible to create Exchange Order - there are no Users in DB!');
         }
 
         return $user;

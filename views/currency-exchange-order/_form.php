@@ -206,7 +206,12 @@ $labelOptional = ' (' . Yii::t('app', 'optional') . ')';
                     </div>
                     <div class="card-footer">
                         <?= SaveButton::widget(); ?>
-                        <?= CancelButton::widget(['url' => '/currency-exchange-order']); ?>
+                        <?php
+                            $cancelUrl = $model->isNewRecord ?
+                                Url::to('/currency-exchange-order') :
+                                Url::to(['/currency-excnange-order/view', 'id' => $model->id]);
+                        ?>
+                        <?= CancelButton::widget(['url' => $cancelUrl]); ?>
                         <?php if ((string)$model->user_id === (string)Yii::$app->user->id) : ?>
                             <?= DeleteButton::widget([
                                 'url' => ['currency-exchange-order/delete/', 'id' => $model->id],
